@@ -28,12 +28,12 @@ yotpo_sync_queue
 2. Review any functions using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have custom logic to handle that will be something you need to work that out manually.
 3. Generate a new key `php bin/magento gene:encryption-key-manager:generate`
-   4. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
-   5. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
+   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
+   1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 4. Fix up any missing config values `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
-    4. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
+   1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
 5. When you are happy you can invalidate your old key `php bin/magento gene:encryption-key-manager:invalidate`
-   6. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
+   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
 
 At this point you should test
 - all integrations
