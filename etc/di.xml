@@ -13,6 +13,12 @@
         </arguments>
     </type>
 
+    <type name="Gene\EncryptionKeyManager\Service\ChangeEncryptionKey">
+        <arguments>
+            <argument name="structure" xsi:type="object">Magento\Config\Model\Config\StructureLazy</argument>
+        </arguments>
+    </type>
+    
     <type name="Magento\Framework\Console\CommandListInterface">
         <arguments>
             <argument name="commands" xsi:type="array">
