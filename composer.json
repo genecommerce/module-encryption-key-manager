@@ -1,0 +1,21 @@
+{
+    "name": "gene/module-encryption-key-manager",
+    "description": "Gene encryption key changer",
+    "type": "magento2-module",
+    "require": {
+        "php": "^8.1||^8.2||^8.3",
+        "magento/module-jwt-user-token": "*",
+        "magento/module-encryption-key": "*",
+        "magento/module-catalog": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Gene\\EncryptionKeyManager\\": ""
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

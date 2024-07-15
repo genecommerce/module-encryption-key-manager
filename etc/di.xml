@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+
+    <type name="Magento\JwtUserToken\Model\SecretBasedJwksFactory">
+        <arguments>
+            <argument name="deploymentConfig" xsi:type="object">Gene\EncryptionKeyManager\Model\DeploymentConfig</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Catalog\Model\View\Asset\Image">
+        <arguments>
+            <argument name="encryptor" xsi:type="object">Gene\EncryptionKeyManager\Service\InvalidatedKeyHasher</argument>
+        </arguments>
+    </type>
+
+    <type name="Magento\Framework\Console\CommandListInterface">
+        <arguments>
+            <argument name="commands" xsi:type="array">
+                <item name="gene_encryption_key_generate" xsi:type="object">Gene\EncryptionKeyManager\Console\GenerateEncryptionKey</item>
+                <item name="gene_encryption_key_invalidate" xsi:type="object">Gene\EncryptionKeyManager\Console\InvalidateOldEncryptionKeys</item>
+                <item name="gene_encryption_key_reencrypt" xsi:type="object">Gene\EncryptionKeyManager\Console\ReencryptUnhandledCoreConfigData</item>
+            </argument>
+        </arguments>
+    </type>
+
+</config>
