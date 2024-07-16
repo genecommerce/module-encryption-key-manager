@@ -32,7 +32,9 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 ```bash
 $ zgrep -h -E '0:3:' database.sql.gz | colrm 500 | grep -Eo ".{0,255}\` VALUES" | uniq | sed -e 's/INSERT.INTO..//' -e 's/..VALUES//'
 core_config_data
+customer_entity
 oauth_token
+oauth_consumer
 tfa_user_config
 yotpo_sync_queue
 ```
