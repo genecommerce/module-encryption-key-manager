@@ -12,6 +12,8 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Magento\Store\Model\App\Emulation;
+use Magento\Framework\App\State;
 
 class GenerateEncryptionKey extends Command
 {
@@ -22,6 +24,8 @@ class GenerateEncryptionKey extends Command
      * @param CacheInterface $cache
      * @param ScopeConfigInterface $scopeConfig
      * @param WriterInterface $configWriter
+     * @param Emulation $emulation
+     * @param State $state
      * @param Encryptor $encryptor
      */
     public function __construct(
@@ -29,6 +33,8 @@ class GenerateEncryptionKey extends Command
         private readonly CacheInterface $cache,
         private readonly ScopeConfigInterface $scopeConfig,
         private readonly WriterInterface $configWriter,
+        private readonly Emulation $emulation,
+        private readonly State $state,
         private readonly Encryptor $encryptor
     ) {
         parent::__construct();
@@ -76,9 +82,12 @@ class GenerateEncryptionKey extends Command
              *
              * @see \Magento\EncryptionKey\Controller\Adminhtml\Crypt\Key\Save::execute()
              */
+            $this->state->setAreaCode('adminhtml');
+            $this->emulation->startEnvironmentEmulation(0, 'adminhtml');
             $output->writeln('Generating a new encryption key using the magento core class');
             $this->changeEncryptionKey->setOutput($output);
             $this->changeEncryptionKey->changeEncryptionKey();
+            $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
 
             $value = $this->scopeConfig->getValue('gene/encryption_key_manager/invalidated_key_index');
