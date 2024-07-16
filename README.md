@@ -18,9 +18,15 @@ This module is provided as-is without any warranty. Test this on your local inst
 
 This is a rough list of steps that should be followed to prevent attacks with CosmicSting. Please read all of the steps carefully to understand the features this module provides, as well as the points of risk.
 
-1. **Generate a new key** `php bin/magento gene:encryption-key-manager:generate`
-   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
-   1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
+## Generate a new Key and prevent old ones from being used for JWT
+
+This should be every merchant's **priority!** Install this module and generate a new key with: 
+
+`php bin/magento gene:encryption-key-manager:generate`
+
+This will force the JWT factory to use the newly generated key. Other areas of the application may continue to use the old keys. This step is the absolute priority and will help prevent attacks with CosmicSting.
+
+## Fully rotate your old keys
 
 1. **Review your database** for any tables with encrypted values. 
 ```bash
