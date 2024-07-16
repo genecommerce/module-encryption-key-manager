@@ -20,7 +20,9 @@ This module is provided as-is without any warranty. Test this on your local inst
 
 Vanilla Magento has a few gaps which are fixed by this module
 - Security - When magento generates a new encryption key it still allows the old one to be used with JWTs. This module prevents that.
-- Performance -  When magento generates a new encryption key, it causes the product media cache hash to change. This causes all product media to regenerate which takes a lot of processing time which can slow down page loads for your customers, as well as consuming extra disk space. This module ensures the old hash is still used for the media gallery.   
+- Performance
+  -  When magento generates a new encryption key, it causes the product media cache hash to change. This causes all product media to regenerate which takes a lot of processing time which can slow down page loads for your customers, as well as consuming extra disk space. This module ensures the old hash is still used for the media gallery.
+  -  This module fixes an issue where every `sales_order_payment` entry was updated during the key generation process. On large stores this could take a long time. Now only necessary entries with saved card information are updated.
 
 As well as providing these fixes there is also additional CLI tooling to help you review, and eventually invalidate your old keys.
 
