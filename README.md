@@ -61,6 +61,20 @@ At this point you should test
 
 # Features
 
+## Automatically invalidates old JWTs when a new key is generated
+
+It updates `\Magento\JwtUserToken\Model\SecretBasedJwksFactory` to only allow keys generated against the most recent encryption key.
+
+We inject a wrapped `\Gene\EncryptionKeyManager\Model\DeploymentConfig` which only returns the most recent encryption key. This means that any existing tokens are no longer usable when a new encryption key is generated.
+
+## Allows you to keep your existing media cache directories
+
+Magento stores resized product images in directories like `media/catalog/product/cache/abc123/f/o/foobar.jpg`, the hash `abc123` is generated utilising the encryption keys in the system.
+
+To avoid having to regenerate all the product media when cycling the encryption key there are some changes to force it to continue using the original value.
+
+`Magento\Catalog\Model\View\Asset\Image` has the `$encryptor` swapped out with `Gene\EncryptionKeyManager\Service\InvalidatedKeyHasher`. Which allows you to continue to generate md5 hashes with the old key.
+
 ## bin/magento gene:encryption-key-manager:generate
 
 You can use `php bin/magento gene:encryption-key-manager:generate` to generate a new encryption key
@@ -128,18 +142,4 @@ Dry run mode, no changes have been made
 ################################################################################
 Done
 ```
-
-## Automatically invalidates old JWTs when a new key is generated
-
-It updates `\Magento\JwtUserToken\Model\SecretBasedJwksFactory` to only allow keys generated against the most recent encryption key.
-
-We inject a wrapped `\Gene\EncryptionKeyManager\Model\DeploymentConfig` which only returns the most recent encryption key. This means that any existing tokens are no longer usable when a new encryption key is generated.
-
-## Allows you to keep your existing media cache directories
-
-Magento stores resized product images in directories like `media/catalog/product/cache/abc123/f/o/foobar.jpg`, the hash `abc123` is generated utilising the encryption keys in the system.
-
-To avoid having to regenerate all the product media when cycling the encryption key there are some changes to force it to continue using the original value. 
-
-`Magento\Catalog\Model\View\Asset\Image` has the `$encryptor` swapped out with `Gene\EncryptionKeyManager\Service\InvalidatedKeyHasher`. Which allows you to continue to generate md5 hashes with the old key.
 
