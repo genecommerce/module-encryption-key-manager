@@ -13,6 +13,12 @@
         </arguments>
     </type>
 
+    <type name="Gene\EncryptionKeyManager\Console\GenerateEncryptionKey">
+        <arguments>
+            <argument name="changeEncryptionKey" xsi:type="object">Gene\EncryptionKeyManager\Service\ChangeEncryptionKey\Proxy</argument>
+        </arguments>
+    </type>
+
     <type name="Gene\EncryptionKeyManager\Service\ChangeEncryptionKey">
         <arguments>
             <argument name="structure" xsi:type="object">Magento\Config\Model\Config\StructureLazy</argument>
