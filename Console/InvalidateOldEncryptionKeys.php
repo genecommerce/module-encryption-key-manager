@@ -17,6 +17,11 @@ class InvalidateOldEncryptionKeys extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
 
+    /**
+     * @param Writer $writer
+     * @param CacheInterface $cache
+     * @param DeploymentConfig $deploymentConfig
+     */
     public function __construct(
         private readonly Writer $writer,
         private readonly CacheInterface $cache,

@@ -51,9 +51,7 @@ class InvalidatedKeyHasher extends MageEncryptor
     }
 
     /**
-     * @param $password
-     * @param $salt
-     * @param $version
+     * @inheritdoc
      * @throws \LogicException
      */
     public function getHash($password, $salt = false, $version = self::HASH_VERSION_LATEST)
@@ -62,8 +60,7 @@ class InvalidatedKeyHasher extends MageEncryptor
     }
 
     /**
-     * @param $password
-     * @param $hash
+     * @inheritdoc
      * @throws \LogicException
      */
     public function isValidHash($password, $hash)
@@ -72,8 +69,7 @@ class InvalidatedKeyHasher extends MageEncryptor
     }
 
     /**
-     * @param $hash
-     * @param $validateCount
+     * @inheritdoc
      * @throws \LogicException
      */
     public function validateHashVersion($hash, $validateCount = false)
@@ -82,7 +78,7 @@ class InvalidatedKeyHasher extends MageEncryptor
     }
 
     /**
-     * @param $data
+     * @inheritdoc
      * @throws \LogicException
      */
     public function encrypt($data)
@@ -91,7 +87,7 @@ class InvalidatedKeyHasher extends MageEncryptor
     }
 
     /**
-     * @param $data
+     * @inheritdoc
      * @throws \LogicException
      */
     public function decrypt($data)

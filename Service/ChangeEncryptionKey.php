@@ -20,7 +20,7 @@ class ChangeEncryptionKey extends MageChanger
     }
 
     /**
-     * @param $text
+     * @param string $text
      * @return void
      */
     private function writeOutput($text)
