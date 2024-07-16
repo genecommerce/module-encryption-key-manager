@@ -10,72 +10,64 @@ From the sansec post
 >
 >Important note: generating a new encryption key using this functionality does not invalidate the old key. We recommend manually updating the old key in app/etc/env.php to a new value rather than removing it.
 
-Even with your store secured, there is the chance that a JWT was issued and may still be valid. It makes sense to cycle your encryption key just to be safe.
-
-Additionally, the Magento process of generating a new encryption key does not actually invalidate the old one, this issue needs addressed.
-
-# Summary
+Even with your store secured, there is the chance that a JWT was issued and may still be valid. Merchants are strongly encouraged to rotate their encryption key to be safe, and the Magento process of generating a new encryption key does not actually invalidate the old one.
 
 This module is provided as-is without any warranty. Test this on your local instances, then staging, then production. Use at your own risk.
 
-Vanilla Magento has a few gaps which are fixed by this module
-- Security - When magento generates a new encryption key it still allows the old one to be used with JWTs. This module prevents that.
-- Performance
-  -  When magento generates a new encryption key, it causes the product media cache hash to change. This causes all product media to regenerate which takes a lot of processing time which can slow down page loads for your customers, as well as consuming extra disk space. This module ensures the old hash is still used for the media gallery.
-  -  This module fixes an issue where every `sales_order_payment` entry was updated during the key generation process. On large stores this could take a long time. Now only necessary entries with saved card information are updated.
+# How to Rotate your key and protect your store 
 
-As well as providing these fixes there is also additional CLI tooling to help you review, and eventually invalidate your old keys.
+This is a rough list of steps that should be followed to prevent attacks with CosmicSting. Please read all of the steps carefully to understand the features this module provides, as well as the points of risk.
 
-# Process to generate a new key and prevent JWTs from old keys being used
+## Generate a new Key and prevent old ones from being used for JWT
 
-The initial mitigation can be to generate a new key, and ensure only this key is valid for JWTs
+This should be every merchant's **priority!** Install this module and generate a new key with: 
 
-1. Generate a new key `php bin/magento gene:encryption-key-manager:generate`
-   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
-   1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
+`php bin/magento gene:encryption-key-manager:generate`
 
-# Process to fully cycle your encryption key
+This will force the JWT factory to use the newly generated key. Other areas of the application may continue to use the old keys. This step is the absolute priority and will help prevent attacks with CosmicSting.
 
-Read all of this document carefully to understand the features this module provides, as well as the points of risk.
+## Fully rotate your old keys
 
-1. Review your database for any tables with encrypted values. 
+1. **Review your database** for any tables with encrypted values. 
 ```bash
 $ zgrep -h -E '0:3:' database.sql.gz | colrm 500 | grep -Eo ".{0,255}\` VALUES" | uniq | sed -e 's/INSERT.INTO..//' -e 's/..VALUES//'
 core_config_data
 oauth_token
 yotpo_sync_queue
 ```
-2. Review any functions using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
-3. If you have custom logic to handle that will be something you need to work that out manually.
-3. Generate a new key `php bin/magento gene:encryption-key-manager:generate`
+2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
+3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
+3. **Generate a new key** `php bin/magento gene:encryption-key-manager:generate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
    1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
-4. Fix up any missing config values `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
+4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
-5. When you are happy you can invalidate your old key `php bin/magento gene:encryption-key-manager:invalidate`
+5. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
-
-At this point you should test
-- all integrations
-- that your media is still displaying with the same hash directory, if it is regenerating it would take up a large amount of disk space and runtime.
+6. Test, test test! Your areas of focus for testing include
+- all integrations that use Magento's APIs
+- your media should still be displaying with the same hash directory. If it is regenerating it would take up a large amount of disk space and runtime.
 - admin user login/logout 
 - customer login/logout
 
 # Features
 
 ## Automatically invalidates old JWTs when a new key is generated
-
-It updates `\Magento\JwtUserToken\Model\SecretBasedJwksFactory` to only allow keys generated against the most recent encryption key.
+When magento generates a new encryption key it still allows the old one to be used with JWTs. This module prevents that by updating `\Magento\JwtUserToken\Model\SecretBasedJwksFactory` to only allow keys generated against the most recent encryption key.
 
 We inject a wrapped `\Gene\EncryptionKeyManager\Model\DeploymentConfig` which only returns the most recent encryption key. This means that any existing tokens are no longer usable when a new encryption key is generated.
 
 ## Allows you to keep your existing media cache directories
+When magento generates a new encryption key, it causes the product media cache hash to change. This causes all product media to regenerate which takes a lot of processing time which can slow down page loads for your customers, as well as consuming extra disk space. This module ensures the old hash is still used for the media gallery.
 
 Magento stores resized product images in directories like `media/catalog/product/cache/abc123/f/o/foobar.jpg`, the hash `abc123` is generated utilising the encryption keys in the system.
 
 To avoid having to regenerate all the product media when cycling the encryption key there are some changes to force it to continue using the original value.
 
 `Magento\Catalog\Model\View\Asset\Image` has the `$encryptor` swapped out with `Gene\EncryptionKeyManager\Service\InvalidatedKeyHasher`. Which allows you to continue to generate md5 hashes with the old key.
+
+## Prevents long running process updating order payments
+This module will also fix an issue where every `sales_order_payment` entry was updated during the key generation process. On large stores this could take a long time. Now only necessary entries with saved card information are updated.
 
 ## bin/magento gene:encryption-key-manager:generate
 
