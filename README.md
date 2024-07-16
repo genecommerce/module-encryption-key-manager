@@ -12,9 +12,27 @@ From the sansec post
 
 Even with your store secured, there is the chance that a JWT was issued and may still be valid. It makes sense to cycle your encryption key just to be safe.
 
-# Process to cycle your encryption key
+Additionally, the Magento process of generating a new encryption key does not actually invalidate the old one, this issue needs addressed.
 
-Do all of the below locally, then on a deployed test environment before going to production. By default Magento allows you to generate a new encryption key, but not invalidate your old ones so that process must be forced and there may be side effects.
+## Summary
+
+This module is provided as-is without any warranty. Test this on your local instances, then staging, then production. Use at your own risk.
+
+Vanilla Magento has a few gaps which are fixed by this module
+- Security - When magento generates a new encryption key it still allows the old one to be used with JWTs. This module prevents that.
+- Performance -  When magento generates a new encryption key, it causes the product media cache hash to change. This causes all product media to regenerate which takes a lot of processing time which can slow down page loads for your customers, as well as consuming extra disk space. This module ensures the old hash is still used for the media gallery.   
+
+As well as providing these fixes there is also additional CLI tooling to help you review, and eventually invalidate your old keys.
+
+# Process to generate a new key and prevent JWTs from old keys being used
+
+The initial mitigation can be to generate a new key, and ensure only this key is valid for JWTs
+
+1. Generate a new key `php bin/magento gene:encryption-key-manager:generate`
+   1 `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
+   1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
+
+# Process to fully cycle your encryption key
 
 Read all of this document carefully to understand the features this module provides, as well as the points of risk.
 
@@ -43,7 +61,7 @@ At this point you should test
 
 # Features
 
-## CLI command to generate a new key
+## bin/magento gene:encryption-key-manager:generate
 
 You can use `php bin/magento gene:encryption-key-manager:generate` to generate a new encryption key
 
@@ -61,7 +79,7 @@ Cleaning cache
 Done
 ```
 
-## CLI command to invalidate old keys
+## bin/magento gene:encryption-key-manager:invalidate
 
 You can use `php bin/magento gene:encryption-key-manager:invalidate` to invalidate old keys
 
@@ -87,7 +105,7 @@ This will create a new section to store the old `invalidated_key` within your `e
 
 ```
 
-## CLI command to re-encrypt unhandled core_config_data values
+## bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data
 
 When Magento generates a new encryption key it re-encrypts values in `core_config_data` where the `backend_model` is defined as `Magento\Config\Model\Config\Backend\Encrypted`. It is likely some third party modules have not implemented this correctly and handled the decryption themselves. In these cases we need to force through the re-encryption process for them.
 
