@@ -14,7 +14,7 @@ Even with your store secured, there is the chance that a JWT was issued and may 
 
 Additionally, the Magento process of generating a new encryption key does not actually invalidate the old one, this issue needs addressed.
 
-## Summary
+# Summary
 
 This module is provided as-is without any warranty. Test this on your local instances, then staging, then production. Use at your own risk.
 
