@@ -16,6 +16,12 @@ class ReencryptUnhandledCoreConfigData extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
 
+    /**
+     * @param DeploymentConfig $deploymentConfig
+     * @param ResourceConnection $resourceConnection
+     * @param EncryptorInterface $encryptor
+     * @param CacheInterface $cache
+     */
     public function __construct(
         private readonly DeploymentConfig $deploymentConfig,
         private readonly ResourceConnection $resourceConnection,
@@ -70,8 +76,10 @@ class ReencryptUnhandledCoreConfigData extends Command
             $connection = $this->resourceConnection->getConnection();
             $select = $connection->select()
                 ->from($ccdTable, ['*'])
-                ->where('(value LIKE "_:_:__%" OR value LIKE "__:_:__%")')
-                ->where('value NOT LIKE ?', "$latestKeyNumber:_:__%");
+                ->where('(value LIKE "_:_:____%" OR value LIKE "__:_:____%")')
+                ->where('value NOT LIKE ?', "$latestKeyNumber:_:__%")
+                ->where('value NOT LIKE ?', "a:%")
+                ->where('value NOT LIKE ?', "s:%");
 
             $result = $connection->fetchAll($select);
             if (empty($result)) {

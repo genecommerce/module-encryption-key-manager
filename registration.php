@@ -3,6 +3,6 @@ use Magento\Framework\Component\ComponentRegistrar;
 
 ComponentRegistrar::register(
     ComponentRegistrar::MODULE,
-    'Gene_EncryptionKeyChanger',
+    'Gene_EncryptionKeyManager',
     __DIR__
 );

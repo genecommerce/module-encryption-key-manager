@@ -17,6 +17,11 @@ class InvalidateOldEncryptionKeys extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
 
+    /**
+     * @param Writer $writer
+     * @param CacheInterface $cache
+     * @param DeploymentConfig $deploymentConfig
+     */
     public function __construct(
         private readonly Writer $writer,
         private readonly CacheInterface $cache,
@@ -54,7 +59,7 @@ class InvalidateOldEncryptionKeys extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (!$input->getOption(self::INPUT_KEY_FORCE)) {
-            $output->writeln('<info>Run with --force to generate a new key. This will decrypt and reencrypt values in core_config_data and saved credit card info</info>');
+            $output->writeln('<info>Run with --force to invalidate old keys. You need to have thoroughly reviewed your entire site and database before doing this.</info>');
             return Cli::RETURN_FAILURE;
         }
 
