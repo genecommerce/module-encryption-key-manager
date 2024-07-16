@@ -29,7 +29,7 @@ As well as providing these fixes there is also additional CLI tooling to help yo
 The initial mitigation can be to generate a new key, and ensure only this key is valid for JWTs
 
 1. Generate a new key `php bin/magento gene:encryption-key-manager:generate`
-   1 `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
+   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
    1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 
 # Process to fully cycle your encryption key
