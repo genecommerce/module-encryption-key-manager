@@ -31,6 +31,7 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 1. **Review your database** for any tables with encrypted values. 
 ```bash
 $ zgrep -h -E '0:3:' database.sql.gz | colrm 500 | grep -Eo ".{0,255}\` VALUES" | uniq | sed -e 's/INSERT.INTO..//' -e 's/..VALUES//'
+admin_user
 core_config_data
 customer_entity
 oauth_token
