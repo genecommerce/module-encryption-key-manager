@@ -1,0 +1,32 @@
+version: 2.1
+
+jobs:
+  build:
+    machine:
+      image: default
+    steps:
+      - checkout
+      - run:
+          name: Verify Architecture
+          command: uname -m
+      - run:
+          name: Log docker version
+          command: |
+            docker --version && docker compose version
+      - run:
+          name: Set up magento and run tests
+          command: |
+            INSTALL_LOC=$(pwd)
+            cd /tmp/
+            git clone https://github.com/AmpersandHQ/magento-docker-test-instance --branch 0.1.21
+            cd magento-docker-test-instance
+            CURRENT_EXTENSION="$INSTALL_LOC" FULL_INSTALL=1 ./bin/mtest-make 2-4-6-p3
+            ./bin/mtest 'cp vendor/gene/module-encryption-key-manager/dev/test.sh .'
+            ./bin/mtest 'chmod +x ./test.sh'
+            ./bin/mtest './test.sh'
+            
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
