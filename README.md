@@ -1,5 +1,7 @@
 # module-encryption-key-manager
 
+[![<genecommerce>](https://circleci.com/gh/genecommerce/module-encryption-key-manager.svg?style=svg)](https://circleci.com/gh/genecommerce/module-encryption-key-manager)
+
 This module was built to aid with https://sansec.io/research/cosmicsting-hitting-major-stores
 
 From the sansec post
