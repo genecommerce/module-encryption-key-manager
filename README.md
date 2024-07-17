@@ -45,7 +45,9 @@ yotpo_sync_queue
    1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
-5. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
+5. Fix up all additional identified columns like so, be careful to verify each table and column as this may not be an exhaustive list (also be aware of `entity_id` versus `row_id`)
+    6. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
+6. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
 6. Test, test test! Your areas of focus for testing include
 - all integrations that use Magento's APIs
@@ -137,6 +139,29 @@ plaintext: some_secret_here
 ciphertext_new: 14:3:xyz456
 Dry run mode, no changes have been made
 ################################################################################
+Done
+```
+
+## bin/magento gene:encryption-key-manager:reencrypt-column
+
+This allows you to target a specific column for re-encryption.
+
+This command runs in dry run mode by default, do that as a first pass to see the changes that will be made. When you are happy run with `--force`.
+
+You should identify all columns that need to be handled, and run them through this process.
+
+```bash
+$ bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token
+Run with --force to make these changes, this will run in dry-run mode by default
+The latest encryption key is number 1, looking for old entries
+Looking for 'rp_token' in 'customer_entity', identified by 'entity_id'
+########################################################################################################################
+entity_id: 9876
+ciphertext_old: 0:3:54+QHWqhSwuncAa87Ueph7xF9qPL1CT6+M9Z5AWuup447J33KGVw+Q+BvVLSKR1H1umiq69phKq5NEHk
+plaintext: acb123
+ciphertext_new: 1:3:Y52lxB2VDnKeOHa0hf7kG/d15oooib6GQOYTcAmzfuEnhfW64NAdNN4YjRrhlh2IzQBO5IbwS48JDDRh
+Dry run mode, no changes have been made
+########################################################################################################################
 Done
 ```
 
