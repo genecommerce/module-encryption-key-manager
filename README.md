@@ -39,7 +39,6 @@ oauth_consumer
 tfa_user_config
 admin_adobe_ims_webapi
 adobe_user_profile
-yotpo_sync_queue
 ```
 2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
