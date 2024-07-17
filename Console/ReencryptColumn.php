@@ -2,12 +2,12 @@
 declare(strict_types=1);
 namespace Gene\EncryptionKeyManager\Console;
 
-use Composer\Console\Input\InputArgument;
 use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Console\Cli;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
