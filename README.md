@@ -46,7 +46,7 @@ yotpo_sync_queue
 4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
 5. Fix up all additional identified columns like so, be careful to verify each table and column as this may not be an exhaustive list (also be aware of `entity_id` versus `row_id`)
-    6. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
+    1. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
 6. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
 6. Test, test test! Your areas of focus for testing include
