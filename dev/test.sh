@@ -46,6 +46,14 @@ else
     echo "FAIL: reencrypt-unhandled-core-config-data needs to run with force" && false
 fi
 
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data > test.txt || true
+if grep -q 'Run with --force' test.txt; then
+    echo "PASS: reencrypt-tfa-data needs to run with force"
+else
+    cat test.txt
+    echo "FAIL: reencrypt-tfa-data needs to run with force" && false
+fi
+
 php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token > test.txt || true
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-column needs to run with force"
