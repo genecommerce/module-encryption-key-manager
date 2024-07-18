@@ -65,6 +65,18 @@ class LogDecrypts
                 return $result;
             }
 
+            $exception = new \Exception();
+
+            /**
+             * Generate a trace identifier based on the stack trace excluding any args
+             */
+            $traceIdentifier = [];
+            foreach ($exception->getTrace() as $trace) {
+                unset($trace['args']);
+                $traceIdentifier[] = implode($trace);
+            }
+            $traceIdentifier = md5(implode($traceIdentifier));
+
             /**
              * This is a bit odd looking but it puts the entire trace in one line, many log management systems do not
              * like multi line logs and this can make it a bit easier to trace / filter in those systems
@@ -73,12 +85,13 @@ class LogDecrypts
              * Remove full path from trace for easier reading
              * BP defined at app/autoload.php
              */
-            $traceString = str_replace(PHP_EOL, '|', (new \Exception)->getTraceAsString());
+            $traceString = str_replace(PHP_EOL, '|', $exception->getTraceAsString());
             $traceString = '|' . str_replace(BP . '/', '', $traceString);
 
             $this->logger->info(
                 'gene encryption manager - legacy decryption',
                 [
+                    'trace_id' => $traceIdentifier,
                     'trace' => $traceString
                 ]
             );

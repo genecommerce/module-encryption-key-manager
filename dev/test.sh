@@ -160,6 +160,9 @@ else
 fi
 echo "";echo "";
 
+echo "A peek at an example log"
+grep 'gene encryption manager' var/log/system.log | tail -1
+
 echo "A peek at the env.php"
 grep -A10 "'crypt' =>" app/etc/env.php
 echo "";echo "";
