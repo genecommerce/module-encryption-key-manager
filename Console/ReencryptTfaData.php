@@ -66,11 +66,12 @@ class ReencryptTfaData extends Command
     {
         if (!$input->getOption(self::INPUT_KEY_FORCE)) {
             $output->writeln('<info>Run with --force to make these changes, this will run in dry-run mode by default</info>');
+            $output->writeln('<error>This CLI has only been tested with Google Authenticator (TOTP) and U2F (Yubikey, etc). If you use Authy or DUO you *MUST* verify before use.</error>');
         }
 
         try {
             $keys = preg_split('/\s+/s', trim((string)$this->deploymentConfig->get('crypt/key')));
-            $latestKeyNumber = count($keys);// - 1;
+            $latestKeyNumber = count($keys) - 1;
             $output->writeln("The latest encryption key is number $latestKeyNumber, looking for old entries");
 
 
@@ -112,8 +113,13 @@ class ReencryptTfaData extends Command
                  * its children.
                  */
                 $valueDecrypted = $this->recursiveDataProcessor->down($valueDecrypted);
-
+                // For test purposes
+                if (isset($valueDecrypted->google->secret)) {
+                    $nestedPlaintext = $this->encryptor->decrypt($valueDecrypted->google->secret);
+                    $output->writeln("nested_plaintext: $nestedPlaintext");
+                }
                 $valueDecrypted = json_encode($valueDecrypted);
+                $output->writeln("plaintext_new: " . $valueDecrypted);
                 $valueEncrypted = $this->encryptor->encrypt($valueDecrypted);
                 $output->writeln("ciphertext_new: " . $valueEncrypted);
 
