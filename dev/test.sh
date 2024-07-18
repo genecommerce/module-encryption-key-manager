@@ -21,23 +21,47 @@ echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
 echo "";echo "";
 
 echo "Verifying commands need to use --force"
-if ! php bin/magento gene:encryption-key-manager:generate | grep -q 'Run with --force'; then
+
+php bin/magento gene:encryption-key-manager:generate > test.txt || true;
+if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
+else
+    cat test.txt
+    echo "FAIL: generate needs to run with force" && false
 fi
-if ! php bin/magento gene:encryption-key-manager:invalidate | grep -q 'Run with --force'; then
+
+php bin/magento gene:encryption-key-manager:invalidate > test.txt || true
+if grep -q 'Run with --force' test.txt; then
     echo "PASS: invalidate needs to run with force"
+else
+    cat test.txt
+    echo "FAIL: invalidate needs to run with force" && false
 fi
-if ! php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data | grep -q 'Run with --force'; then
+
+php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data > test.txt || true
+if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-unhandled-core-config-data needs to run with force"
+else
+    cat test.txt
+    echo "FAIL: reencrypt-unhandled-core-config-data needs to run with force" && false
 fi
-if ! php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force | grep -q 'Run with --force'; then
+
+php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token > test.txt || true
+if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-column needs to run with force"
+else
+    cat test.txt
+    echo "FAIL: reencrypt-column needs to run with force" && false
 fi
 echo "";echo "";
 
 echo "Verifying you cannot invalidate with only 1 key"
-if ! php bin/magento gene:encryption-key-manager:invalidate --force | grep -q 'Cannot invalidate when there is only one key'; then
+php bin/magento gene:encryption-key-manager:invalidate --force > test.txt || true
+if grep -Eq 'Cannot invalidate when there is only one key|No further keys need invalidated' test.txt; then
     echo "PASS: You cannot invalidate with only 1 key"
+else
+    cat test.txt
+    echo "FAIL" && false
 fi
 echo "";echo "";
 
@@ -47,10 +71,10 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-unhandled-core-config-data"
-php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > unhandled.txt
-cat unhandled.txt
-grep -q 'zzzzz/zzzzz/zzzz' unhandled.txt
-grep -q 'abc123' unhandled.txt
+php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > test.txt || (cat test.txt && false)
+cat test.txt
+grep -q 'zzzzz/zzzzz/zzzz' test.txt
+grep -q 'abc123' test.txt
 echo "PASS"
 echo "";echo "";
 echo "Running reencrypt-unhandled-core-config-data - again to verify it was all processed"
@@ -59,10 +83,10 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-column"
-php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > column.txt
-cat column.txt
-grep -q "$FAKE_RP_TOKEN" column.txt
-grep -q abc123 column.txt
+php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > test.txt || (cat test.txt && false)
+cat test.txt
+grep -q "$FAKE_RP_TOKEN" test.txt
+grep -q abc123 test.txt
 echo "PASS"
 echo "";echo "";
 echo "Running reencrypt-column - again to verify it was all processed"
@@ -79,4 +103,5 @@ echo "";echo "";
 
 echo "A peek at the env.php"
 grep -A10 "'crypt' =>" app/etc/env.php
+echo "";echo "";
 echo "DONE"
