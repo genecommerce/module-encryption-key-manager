@@ -16,6 +16,8 @@ Even with your store secured, there is the chance that a JWT was issued and may 
 
 This module is provided as-is without any warranty. Test this on your local instances, then staging, then production. Use at your own risk.
 
+This module **does not conflict** with the [new hotfix](https://experienceleague.adobe.com/en/docs/commerce-knowledge-base/kb/troubleshooting/known-issues-patches-attached/security-update-available-for-adobe-commerce-apsb24-40-revised-to-include-isolated-patch-for-cve-2024-34102?#hotfix) released by Adobe. Both this module and that hotfix improve security in the same way, by making `SecretBasedJwksFactory` use the most recent key. This module also provides additional tooling and improvements, please read below.
+
 # How to Rotate your key and protect your store 
 
 This is a rough list of steps that should be followed to prevent attacks with CosmicSting. Please read all of the steps carefully to understand the features this module provides, as well as the points of risk.
