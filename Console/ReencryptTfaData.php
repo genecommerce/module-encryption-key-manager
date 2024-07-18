@@ -50,7 +50,7 @@ class ReencryptTfaData extends Command
             ),
         ];
 
-        $this->setName('gene:encryption-key-manager:reencrypt:tfa-data');
+        $this->setName('gene:encryption-key-manager:reencrypt-tfa-data');
         $this->setDescription('Re-encrypts tfa_user_config data with the latest key');
         $this->setDefinition($options);
 
