@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
 
+    <type name="Magento\Framework\Encryption\Encryptor">
+        <plugin name="gene-encryption-key-manager-log-decrypts" type="Gene\EncryptionKeyManager\Plugin\LogDecrypts" disabled="false"/>
+    </type>
+
     <type name="Magento\JwtUserToken\Model\SecretBasedJwksFactory">
         <arguments>
             <argument name="deploymentConfig" xsi:type="object">Gene\EncryptionKeyManager\Model\DeploymentConfig</argument>
