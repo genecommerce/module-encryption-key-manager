@@ -58,7 +58,11 @@ adobe_user_profile
     4. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
     5. `bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
     6. `bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
-6. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
+6. At this point you should have all your data migrated to your new encryption key, to help you verify this you can do the following
+   1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1`
+   2. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
+   3. Monitor your logs for "gene encryption manager" to verify nothing is still using the old key
+7. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
 6. Test, test test! Your areas of focus for testing include
 - all integrations that use Magento's APIs
@@ -84,6 +88,17 @@ To avoid having to regenerate all the product media when cycling the encryption 
 
 ## Prevents long running process updating order payments
 This module will also fix an issue where every `sales_order_payment` entry was updated during the key generation process. On large stores this could take a long time. Now only necessary entries with saved card information are updated.
+
+## Logging
+
+This module provides a mechanism to log the source for each call to decrypt. This will produce a lot of data as the magento system configuration is encrypted so each request will trigger a log write.
+
+It is recommended to enable this logging after you have handled the re-encryption of all data in your system, but _before_ you invalidate the old keys. This will give you an indication that you have properly handled everything, because if you see a log written it will tell you that something has been missed and where to go to find the source of the issue.
+
+```bash
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
+```
 
 ## bin/magento gene:encryption-key-manager:generate
 
