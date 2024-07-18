@@ -68,7 +68,6 @@ class ReencryptTfaData extends Command
             $output->writeln('<info>Run with --force to make these changes, this will run in dry-run mode by default</info>');
         }
 
-        $this->recursiveDataProcessor->processNestedEncryptedData();
         try {
             $keys = preg_split('/\s+/s', trim((string)$this->deploymentConfig->get('crypt/key')));
             $latestKeyNumber = count($keys);// - 1;
