@@ -14,6 +14,13 @@ echo "Stubbing in some test data"
 vendor/bin/n98-magerun2 --version
 vendor/bin/n98-magerun2 admin:user:create --no-interaction --admin-user "$ADMIN" --admin-email "example$CURRENT_TIMESTAMP@example.com" --admin-password $PASSWORD --admin-firstname adminuser --admin-lastname adminuser
 vendor/bin/n98-magerun2 config:store:set zzzzz/zzzzz/zzzz xyz123 --encrypt
+
+ADMIN_ID=$(vendor/bin/n98-magerun2 db:query "SELECT user_id FROM admin_user LIMIT 1")
+ADMIN_ID="${ADMIN_ID: -1}"
+FAKE_GOOGLE_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'googletokenabc123')
+TWOFA_JSON="{\"google\":{\"secret\":\"$FAKE_GOOGLE_TOKEN\",\"active\":true}}"
+TWOFA_JSON_ENCRYPTED=$(vendor/bin/n98-magerun2 dev:encrypt "$TWOFA_JSON")
+
 FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
@@ -87,6 +94,17 @@ echo "PASS"
 echo "";echo "";
 echo "Running reencrypt-unhandled-core-config-data - again to verify it was all processed"
 php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force | grep --context 999 'No old entries found'
+echo "PASS"
+echo "";echo "";
+
+echo "Running reencrypt-tfa-data"
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force > test.txt || (cat test.txt && false)
+cat test.txt
+grep -q 'googletokenabc123' test.txt
+echo "PASS"
+echo "";echo "";
+echo "Running reencrypt-tfa-data - again to verify it was all processed"
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force | grep --context 999 'No old entries found'
 echo "PASS"
 echo "";echo "";
 
