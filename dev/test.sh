@@ -2,6 +2,8 @@
 set -euo pipefail
 err_report() {
     echo "Error on line $1"
+    echo "last test.txt was"
+    cat test.txt
 }
 trap 'err_report $LINENO' ERR
 
@@ -14,6 +16,16 @@ echo "Stubbing in some test data"
 vendor/bin/n98-magerun2 --version
 vendor/bin/n98-magerun2 admin:user:create --no-interaction --admin-user "$ADMIN" --admin-email "example$CURRENT_TIMESTAMP@example.com" --admin-password $PASSWORD --admin-firstname adminuser --admin-lastname adminuser
 vendor/bin/n98-magerun2 config:store:set zzzzz/zzzzz/zzzz xyz123 --encrypt
+
+ADMIN_ID=$(vendor/bin/n98-magerun2 db:query "SELECT user_id FROM admin_user LIMIT 1")
+ADMIN_ID="${ADMIN_ID: -1}"
+FAKE_GOOGLE_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'googletokenabc123')
+TWOFA_JSON="{\"google\":{\"secret\":\"$FAKE_GOOGLE_TOKEN\",\"active\":true}}"
+TWOFA_JSON_ENCRYPTED=$(vendor/bin/n98-magerun2 dev:encrypt "$TWOFA_JSON")
+echo "Generating 2FA data for admin user $ADMIN in tfa_user_config"
+vendor/bin/n98-magerun2 db:query "delete from tfa_user_config where user_id=$ADMIN_ID";
+vendor/bin/n98-magerun2 db:query "insert into tfa_user_config(user_id, encoded_config) values ($ADMIN_ID, '$TWOFA_JSON_ENCRYPTED');"
+vendor/bin/n98-magerun2 db:query "select user_id, encoded_config from tfa_user_config where user_id=$ADMIN_ID";
 FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
@@ -26,7 +38,6 @@ php bin/magento gene:encryption-key-manager:generate > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
-    cat test.txt
     echo "FAIL: generate needs to run with force" && false
 fi
 
@@ -34,7 +45,6 @@ php bin/magento gene:encryption-key-manager:invalidate > test.txt || true
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: invalidate needs to run with force"
 else
-    cat test.txt
     echo "FAIL: invalidate needs to run with force" && false
 fi
 
@@ -42,15 +52,20 @@ php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-unhandled-core-config-data needs to run with force"
 else
-    cat test.txt
     echo "FAIL: reencrypt-unhandled-core-config-data needs to run with force" && false
+fi
+
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data > test.txt || true
+if grep -q 'Run with --force' test.txt; then
+    echo "PASS: reencrypt-tfa-data needs to run with force"
+else
+    echo "FAIL: reencrypt-tfa-data needs to run with force" && false
 fi
 
 php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token > test.txt || true
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-column needs to run with force"
 else
-    cat test.txt
     echo "FAIL: reencrypt-column needs to run with force" && false
 fi
 echo "";echo "";
@@ -60,7 +75,6 @@ php bin/magento gene:encryption-key-manager:invalidate --force > test.txt || tru
 if grep -Eq 'Cannot invalidate when there is only one key|No further keys need invalidated' test.txt; then
     echo "PASS: You cannot invalidate with only 1 key"
 else
-    cat test.txt
     echo "FAIL" && false
 fi
 echo "";echo "";
@@ -71,7 +85,7 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-unhandled-core-config-data"
-php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > test.txt || (cat test.txt && false)
+php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > test.txt
 cat test.txt
 grep -q 'zzzzz/zzzzz/zzzz' test.txt
 grep -q 'xyz123' test.txt
@@ -82,8 +96,24 @@ php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data
 echo "PASS"
 echo "";echo "";
 
+echo "Running reencrypt-tfa-data"
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force > test.txt
+cat test.txt
+grep 'plaintext_new' test.txt | grep 'secret' test.txt
+if grep 'plaintext_new' test.txt | grep "$TWOFA_JSON_ENCRYPTED"; then
+    echo "FAIL: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data" && false
+else
+    echo "PASS: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data"
+fi
+echo "PASS"
+echo "";echo "";
+echo "Running reencrypt-tfa-data - again to verify it was all processed"
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force | grep --context 999 'No old entries found'
+echo "PASS"
+echo "";echo "";
+
 echo "Running reencrypt-column"
-php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > test.txt || (cat test.txt && false)
+php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > test.txt
 cat test.txt
 grep -q "$FAKE_RP_TOKEN" test.txt
 grep -q abc123 test.txt

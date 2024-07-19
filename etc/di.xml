@@ -36,6 +36,7 @@
                 <item name="gene_encryption_key_invalidate" xsi:type="object">Gene\EncryptionKeyManager\Console\InvalidateOldEncryptionKeys</item>
                 <item name="gene_encryption_key_reencrypt" xsi:type="object">Gene\EncryptionKeyManager\Console\ReencryptUnhandledCoreConfigData</item>
                 <item name="gene_encryption_key_reencryptcolumn" xsi:type="object">Gene\EncryptionKeyManager\Console\ReencryptColumn</item>
+                <item name="gene_encryption_key_reencrypt_tfa" xsi:type="object">Gene\EncryptionKeyManager\Console\ReencryptTfaData</item>
             </argument>
         </arguments>
     </type>
