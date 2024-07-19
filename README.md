@@ -1,4 +1,4 @@
-[# module-encryption-key-manager
+# module-encryption-key-manager
 
 [![<genecommerce>](https://circleci.com/gh/genecommerce/module-encryption-key-manager.svg?style=svg)](https://circleci.com/gh/genecommerce/module-encryption-key-manager)
 
