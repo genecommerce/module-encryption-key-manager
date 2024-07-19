@@ -112,11 +112,6 @@ class ReencryptTfaData extends Command
                  * its children.
                  */
                 $valueDecrypted = $this->recursiveDataProcessor->down($valueDecrypted);
-                // For test purposes
-                if (isset($valueDecrypted->google->secret)) {
-                    $nestedPlaintext = $this->encryptor->decrypt($valueDecrypted->google->secret);
-                    $output->writeln("nested_plaintext: $nestedPlaintext");
-                }
                 $valueDecrypted = json_encode($valueDecrypted);
                 $output->writeln("plaintext_new: " . $valueDecrypted);
                 $valueEncrypted = $this->encryptor->encrypt($valueDecrypted);
