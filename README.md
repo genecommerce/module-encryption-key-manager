@@ -1,4 +1,4 @@
-# module-encryption-key-manager
+[# module-encryption-key-manager
 
 [![<genecommerce>](https://circleci.com/gh/genecommerce/module-encryption-key-manager.svg?style=svg)](https://circleci.com/gh/genecommerce/module-encryption-key-manager)
 
@@ -57,6 +57,8 @@ adobe_user_profile
    1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
+4. **Fix 2FA data** `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
+   1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
 5. Fix up all additional identified columns like so, be careful to verify each table and column as this may not be an exhaustive list (also be aware of `entity_id`, `row_id` and `id`)
     1. `bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token`
     2. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
@@ -197,3 +199,27 @@ Dry run mode, no changes have been made
 Done
 ```
 
+## bin/magento gene:encryption-key-manager:reencrypt-tfa-data
+
+This command re-encrypts the 2FA data stored in `tfa_user_config`. Some of this data is doubly encrypted, which is why it needs special handling. 
+
+This command runs in dry run mode by default, do that as a first pass to see the changes that will be made. When you are happy run with `--force`.
+
+This CLI has only been tested with Google Authenticator (TOTP) and U2F (Yubikey, etc). If you use Authy or DUO you *MUST* verify before use.
+
+```bash
+$ bin/magento gene:encryption-key-manager:reencrypt-tfa-data
+Run with --force to make these changes, this will run in dry-run mode by default
+This CLI has only been tested with Google Authenticator (TOTP) and U2F (Yubikey, etc). If you use Authy or DUO you *MUST* verify before use.
+The latest encryption key is number 1, looking for old entries
+Looking for encoded_config in tfa_user_config, identified by 'config_id'
+########################################################################################################################
+config_id: 1
+ciphertext_old: 0:3:rV/z9+ilmOtaPGnOoZBayZ3waBNphK1RAcyWLetipM5UONn793rTyRknO1GhWxKxXC3ooJAgWDTMJPaXGRMGdj8yOqrlrjEp9uqi8D9SFgE/UTiWkBF4RRwVvZeo4lGGnll/CxJmtzuMXWa65TS0Z/a2QLdPyIH/3OomJH7sb3FgfQ==
+plaintext: {"google":{"secret":"0:3:LKm9642Rpl0gqlBha+m3FYWnQBBtLgjdLDvjfoPo923xmxd9ykbnvX0LucKI","active":true}}
+plaintext_new: {"google":{"secret":"1:3:m9mScDkTkeCdn2lXpwf5oMkL7lmgLOTYJXQyKbK\/m8QwDZVDNWI3CzH+uBaq","active":true}}
+ciphertext_new: 1:3:Tw/5ik2meBqzL8oodrudxmksrOekA/DbZE5+KgBAygFxp6Zx/A7vbMyHt4+N1MtQhlnqW/mAXL3l2kDpFHIQVvi2L+23o9mRpii2ldBwmuZgDlpQsm+Q4Hf8a+t2aUKndGOMeoH6xcZXFCConC+TUI+uregFXx6B5LU4ohCY52m/v7w=
+Dry run mode, no changes have been made
+########################################################################################################################
+Done
+```
