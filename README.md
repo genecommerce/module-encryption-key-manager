@@ -40,7 +40,7 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 
 1. **Review your database** for any tables with encrypted values. 
 ```bash
-$ zgrep -E "VALUES\s*\(.*'\d:\d:..." database.sql.gz | awk '{print $3}' | uniq
+$ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | uniq
 admin_user
 core_config_data
 customer_entity
