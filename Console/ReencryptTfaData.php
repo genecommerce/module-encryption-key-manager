@@ -74,7 +74,6 @@ class ReencryptTfaData extends Command
             $latestKeyNumber = count($keys) - 1;
             $output->writeln("The latest encryption key is number $latestKeyNumber, looking for old entries");
 
-
             $table = self::TFA_TABLE;
             $identifier = 'config_id';
             $column = 'encoded_config';

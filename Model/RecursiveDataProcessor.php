@@ -6,13 +6,17 @@ use Magento\Framework\Encryption\EncryptorInterface;
 
 class RecursiveDataProcessor
 {
+    /**
+     * @param EncryptorInterface $encryptor
+     */
     public function __construct(
         private readonly EncryptorInterface $encryptor,
-    ) {}
+    ) {
+    }
 
     /**
      * Recursively process nested encrypted values
-     * @param $layer
+     * @param mixed $layer
      * @return mixed
      */
     public function down($layer)
@@ -44,9 +48,10 @@ class RecursiveDataProcessor
 
     /**
      * Wrapper to set value back to parent as element write syntax differs by type
-     * @param $parent
-     * @param $key
-     * @param $value
+     *
+     * @param mixed $parent
+     * @param mixed $key
+     * @param mixed $value
      * @return mixed
      */
     private function setValue($parent, $key, $value)
