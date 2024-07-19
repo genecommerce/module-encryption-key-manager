@@ -38,7 +38,6 @@ php bin/magento gene:encryption-key-manager:generate > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
-    cat test.txt
     echo "FAIL: generate needs to run with force" && false
 fi
 
@@ -46,7 +45,6 @@ php bin/magento gene:encryption-key-manager:invalidate > test.txt || true
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: invalidate needs to run with force"
 else
-    cat test.txt
     echo "FAIL: invalidate needs to run with force" && false
 fi
 
@@ -54,7 +52,6 @@ php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-unhandled-core-config-data needs to run with force"
 else
-    cat test.txt
     echo "FAIL: reencrypt-unhandled-core-config-data needs to run with force" && false
 fi
 
@@ -62,7 +59,6 @@ php bin/magento gene:encryption-key-manager:reencrypt-tfa-data > test.txt || tru
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-tfa-data needs to run with force"
 else
-    cat test.txt
     echo "FAIL: reencrypt-tfa-data needs to run with force" && false
 fi
 
@@ -70,7 +66,6 @@ php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id 
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: reencrypt-column needs to run with force"
 else
-    cat test.txt
     echo "FAIL: reencrypt-column needs to run with force" && false
 fi
 echo "";echo "";
@@ -80,7 +75,6 @@ php bin/magento gene:encryption-key-manager:invalidate --force > test.txt || tru
 if grep -Eq 'Cannot invalidate when there is only one key|No further keys need invalidated' test.txt; then
     echo "PASS: You cannot invalidate with only 1 key"
 else
-    cat test.txt
     echo "FAIL" && false
 fi
 echo "";echo "";
@@ -106,8 +100,7 @@ echo "Running reencrypt-tfa-data"
 php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force > test.txt
 cat test.txt
 grep 'plaintext_new' test.txt | grep 'secret' test.txt
-if grep -q 'plaintext_new' "$TWOFA_JSON_ENCRYPTED" test.txt; then
-    cat test.txt
+if grep 'plaintext_new' test.txt | grep "$TWOFA_JSON_ENCRYPTED"; then
     echo "FAIL: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data" && false
 else
     echo "PASS: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data"
