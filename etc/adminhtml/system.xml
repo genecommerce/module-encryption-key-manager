@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <section id="dev">
+            <group id="debug">
+                <field id="gene_encryption_manager_enable_decrypt_logging" translate="label" type="select" sortOrder="15" showInDefault="0" showInWebsite="0" showInStore="0" canRestore="0">
+                    <label>Enable logging of decrypt calls</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="gene_encryption_manager_only_log_old_decrypts" translate="label" type="select" sortOrder="20" showInDefault="0" showInWebsite="0" showInStore="0" canRestore="0">
+                    <label>Only log when the decryption is with an old key</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

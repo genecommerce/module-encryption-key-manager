@@ -130,6 +130,68 @@ php bin/magento gene:encryption-key-manager:invalidate --force | grep --context 
 echo "PASS"
 echo "";echo "";
 
+echo "Testing the decrypt logger"
+
+echo "Testing disable behaviour"
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 0
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 0
+php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
+rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
+touch var/log/system.log
+ls -l var/log
+if grep -q 'gene encryption manager' var/log/system.log; then
+    cat var/log/system.log
+    echo "FAIL: No logs should be produced without enabling the logger" && false
+else
+    echo "PASS: No logs were produced"
+fi
+echo "";echo "";
+
+echo "Testing that enabling it produces a log"
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 0
+php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
+rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
+touch var/log/system.log
+ls -l var/log
+if grep 'gene encryption manager' var/log/system.log | grep -q 'Magento\\'; then
+    echo "PASS: A log was produced"
+else
+    cat var/log/system.log
+    echo "FAIL: A log should be produced" && false
+fi
+echo "";echo "";
+
+echo "Testing that gene_encryption_manager_only_log_old_decrypts=1 stops a log being written"
+php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
+php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
+rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
+touch var/log/system.log
+ls -l var/log
+if grep -q 'gene encryption manager' var/log/system.log; then
+    cat var/log/system.log
+    echo "FAIL: No logs should be produced when the keys are up to date" && false
+else
+    echo "PASS: No logs were produced when the keys were up to date"
+fi
+echo "";echo "";
+
+echo "Testing that gene_encryption_manager_only_log_old_decrypts=1 writes when an old key is used"
+rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
+vendor/bin/n98-magerun2 dev:decrypt '0:3:qwertyuiopasdfghjklzxcvbnm' # we are on a higher key than 0 now
+touch var/log/system.log
+ls -l var/log
+if grep 'gene encryption manager' var/log/system.log | grep -q 'DecryptCommand'; then
+    echo "PASS: We have a log hit when trying to decrypt with the old key"
+else
+    cat var/log/system.log
+    echo "FAIL: We should have a log hit when trying to decrypt using an old key" && false
+fi
+echo "";echo "";
+
+echo "A peek at an example log"
+grep 'gene encryption manager' var/log/system.log | tail -1
+
 echo "A peek at the env.php"
 grep -A10 "'crypt' =>" app/etc/env.php
 echo "";echo "";
