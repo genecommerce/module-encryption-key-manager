@@ -38,7 +38,7 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 
 ## Fully rotate your old keys
 
-1. **Review your database** for any tables with encrypted values. Make sure your dump is `--human-readable` so that all values are on the same line as the `INSERT INTO` 
+1. **Review your database** for any tables with encrypted values. Make sure your dump is `--human-readable` (magerun) or `--extended-insert=FALSE` (mysqldump) so that all values are on the same line as the `INSERT INTO` 
 ```bash
 $ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | uniq
 admin_user
