@@ -2,6 +2,8 @@
 set -euo pipefail
 err_report() {
     echo "Error on line $1"
+    echo "last test.txt was"
+    cat test.txt
 }
 trap 'err_report $LINENO' ERR
 
@@ -89,7 +91,7 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-unhandled-core-config-data"
-php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > test.txt || (cat test.txt && false)
+php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data --force > test.txt
 cat test.txt
 grep -q 'zzzzz/zzzzz/zzzz' test.txt
 grep -q 'xyz123' test.txt
@@ -101,9 +103,15 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-tfa-data"
-php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force > test.txt || (cat test.txt && false)
+php bin/magento gene:encryption-key-manager:reencrypt-tfa-data --force > test.txt
 cat test.txt
-grep -q 'googletokenabc123' test.txt
+grep 'plaintext_new' test.txt | grep 'secret' test.txt
+if grep -q 'plaintext_new' "$TWOFA_JSON_ENCRYPTED" test.txt; then
+    cat test.txt
+    echo "FAIL: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data" && false
+else
+    echo "PASS: The plaintext_new should no longer have the original TWOFA_JSON_ENCRYPTED data"
+fi
 echo "PASS"
 echo "";echo "";
 echo "Running reencrypt-tfa-data - again to verify it was all processed"
@@ -112,7 +120,7 @@ echo "PASS"
 echo "";echo "";
 
 echo "Running reencrypt-column"
-php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > test.txt || (cat test.txt && false)
+php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force > test.txt
 cat test.txt
 grep -q "$FAKE_RP_TOKEN" test.txt
 grep -q abc123 test.txt
