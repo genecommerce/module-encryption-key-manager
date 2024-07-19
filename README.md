@@ -50,6 +50,7 @@ tfa_user_config
 admin_adobe_ims_webapi
 adobe_user_profile
 ```
+2. Review your `env.php`, if you store any encrypted values there they will need to be reissued by the provider as they may have been leaked.
 2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
 3. **Generate a new key** `php bin/magento gene:encryption-key-manager:generate`
