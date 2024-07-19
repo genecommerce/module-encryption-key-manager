@@ -8,6 +8,7 @@ use Magento\Framework\Config\File\ConfigFilePool;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\Console\Cli;
+use Magento\Framework\Math\Random;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -25,6 +26,7 @@ class InvalidateOldEncryptionKeys extends Command
     public function __construct(
         private readonly Writer $writer,
         private readonly CacheInterface $cache,
+        private readonly Random $random,
         private readonly DeploymentConfig $deploymentConfig
     ) {
         parent::__construct();
@@ -87,17 +89,19 @@ class InvalidateOldEncryptionKeys extends Command
              * - keep a record of it for storing in 'crypt/invalidated_key'
              */
             $changes = false;
+            $keySize = SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_IETF_KEYBYTES;
             foreach ($keys as $id => $key) {
                 if ($id === count($keys) - 1) {
                     break; // last key needs to remain usable
                 }
-                if (str_starts_with($key, 'geneinvalidatedkeys')) {
+                if (str_starts_with($key, 'invalid')) {
                     continue; // already been invalidated
                 }
                 $changes = true;
                 $invalidatedKeys[] = $key; // this key needs to be added to the invalidated list
-                $keys[$id] = uniqid('geneinvalidatedkeys');
-                if (strlen($keys[$id]) !== SODIUM_CRYPTO_AEAD_CHACHA20POLY1305_IETF_KEYBYTES) {
+                $newKey = 'invalid' . $this->random->getRandomString($keySize - 7);
+                $keys[$id] = $newKey;
+                if (strlen($keys[$id]) !== $keySize) {
                     throw new \Exception('Failed to invalidate the key with an appropriate length');
                 }
             }
