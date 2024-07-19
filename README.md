@@ -133,24 +133,21 @@ You can use `php bin/magento gene:encryption-key-manager:invalidate` to invalida
 
 This will create a new section to store the old `invalidated_key` within your `env.php` as well as stub out the `crypt/key` path with nonsense text, so that the numerical ordering of the keys is maintained.
 
-```diff
---- app/etc/env.php   2024-07-14 06:03:14.194370013 +0000
-+++ app/etc/env.php   2024-07-14 06:04:12.775458013 +0000
-@@ -50,9 +50,11 @@
-         'table_prefix' => ''
-     ],
-     'crypt' => [
--        'key' => 'f00e29e230c723afbdaef0fb5d3e6134
--d59b93bf844ebe700ae8202f67e56e34
-+        'key' => 'geneinvalidatedkeys669368519467b
-+geneinvalidatedkeys6693685194682
- 412b0ad1190572ff9f3c58f595ed1f3e',
-+        'invalidated_key' => 'f00e29e230c723afbdaef0fb5d3e6134
-+d59b93bf844ebe700ae8202f67e56e34'
-     ],
-     'resource' => [
-         'default_setup' => [
+Before invalidation
+```php
+    'crypt' => [
+        'key' => '84c9d7c0b305adf9ea7e19a05478bf11
+2951b41e2b7f4c26e60a8e7ee00ca17b'
+    ],
+```
 
+After invalidation
+```php
+    'crypt' => [
+        'key' => 'invalidpwecbVeGpoL3Jxa4PXEOdn1ej
+2951b41e2b7f4c26e60a8e7ee00ca17b',
+        'invalidated_key' => '84c9d7c0b305adf9ea7e19a05478bf11'
+    ],
 ```
 
 ## bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data
