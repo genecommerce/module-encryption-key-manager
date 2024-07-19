@@ -103,7 +103,7 @@ class ReencryptTfaData extends Command
                 $value = $row[$column];
                 $output->writeln("ciphertext_old: " . $value);
                 $valueDecrypted = $this->encryptor->decrypt($value);
-                $output->writeln("plaintext: " . $valueDecrypted);
+                $output->writeln("plaintext_old: " . $valueDecrypted);
                 $valueDecrypted = json_decode($valueDecrypted);
 
                 /**

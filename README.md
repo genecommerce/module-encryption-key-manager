@@ -216,7 +216,7 @@ Looking for encoded_config in tfa_user_config, identified by 'config_id'
 ########################################################################################################################
 config_id: 1
 ciphertext_old: 0:3:rV/z9+ilmOtaPGnOoZBayZ3waBNphK1RAcyWLetipM5UONn793rTyRknO1GhWxKxXC3ooJAgWDTMJPaXGRMGdj8yOqrlrjEp9uqi8D9SFgE/UTiWkBF4RRwVvZeo4lGGnll/CxJmtzuMXWa65TS0Z/a2QLdPyIH/3OomJH7sb3FgfQ==
-plaintext: {"google":{"secret":"0:3:LKm9642Rpl0gqlBha+m3FYWnQBBtLgjdLDvjfoPo923xmxd9ykbnvX0LucKI","active":true}}
+plaintext_old: {"google":{"secret":"0:3:LKm9642Rpl0gqlBha+m3FYWnQBBtLgjdLDvjfoPo923xmxd9ykbnvX0LucKI","active":true}}
 plaintext_new: {"google":{"secret":"1:3:m9mScDkTkeCdn2lXpwf5oMkL7lmgLOTYJXQyKbK\/m8QwDZVDNWI3CzH+uBaq","active":true}}
 ciphertext_new: 1:3:Tw/5ik2meBqzL8oodrudxmksrOekA/DbZE5+KgBAygFxp6Zx/A7vbMyHt4+N1MtQhlnqW/mAXL3l2kDpFHIQVvi2L+23o9mRpii2ldBwmuZgDlpQsm+Q4Hf8a+t2aUKndGOMeoH6xcZXFCConC+TUI+uregFXx6B5LU4ohCY52m/v7w=
 Dry run mode, no changes have been made
