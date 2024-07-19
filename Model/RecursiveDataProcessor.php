@@ -6,6 +6,8 @@ use Magento\Framework\Encryption\EncryptorInterface;
 
 class RecursiveDataProcessor
 {
+    private int $failures = 0;
+
     /**
      * @param EncryptorInterface $encryptor
      */
@@ -35,8 +37,17 @@ class RecursiveDataProcessor
                     // If match found $matches[0] will exist
                     if (isset($matches[0])) {
                         // Re-encrypt value
-                        $value = $this->encryptor->decrypt($value);
-                        $value = $this->encryptor->encrypt($value);
+                        $decryptedValue = $this->encryptor->decrypt($value);
+                        if ($decryptedValue === '') {
+                            /**
+                             * \Magento\Framework\Encryption\Encryptor::decrypt seems to return '' on failure
+                             */
+                            $this->failures++;
+                        } else {
+                            $value = $this->encryptor->encrypt($decryptedValue);
+                        }
+                        // Remove $decryptedValue for future iterations
+                        unset($decryptedValue);
                     }
                 }
             }
@@ -63,5 +74,14 @@ class RecursiveDataProcessor
             $parent->$key = $value;
         }
         return $parent;
+    }
+
+    /**
+     * Did we encounter any cases were we were unable to decrypt & re-encrypt stored values
+     * @return bool
+     */
+    public function hasFailures(): bool
+    {
+        return $this->failures > 0;
     }
 }

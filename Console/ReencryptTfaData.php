@@ -133,7 +133,9 @@ class ReencryptTfaData extends Command
                 }
                 $output->writeln(str_pad('', 120, '#'));
             }
-
+            if ($this->recursiveDataProcessor->hasFailures()) {
+                $output->writeln('<error>We encountered some problems re-encrypting values in the tfa_user_config table which requires manual intervention</error>');
+            }
             $connection->commit();
             $this->cache->clean();
             $output->writeln('Done');
