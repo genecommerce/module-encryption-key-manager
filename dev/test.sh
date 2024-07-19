@@ -20,7 +20,10 @@ ADMIN_ID="${ADMIN_ID: -1}"
 FAKE_GOOGLE_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'googletokenabc123')
 TWOFA_JSON="{\"google\":{\"secret\":\"$FAKE_GOOGLE_TOKEN\",\"active\":true}}"
 TWOFA_JSON_ENCRYPTED=$(vendor/bin/n98-magerun2 dev:encrypt "$TWOFA_JSON")
-
+echo "Generating 2FA data for admin user $ADMIN in tfa_user_config"
+vendor/bin/n98-magerun2 db:query "delete from tfa_user_config where user_id=$ADMIN_ID";
+vendor/bin/n98-magerun2 db:query "insert into tfa_user_config(user_id, encoded_config) values ($ADMIN_ID, '$TWOFA_JSON_ENCRYPTED');"
+vendor/bin/n98-magerun2 db:query "select user_id, encoded_config from tfa_user_config where user_id=$ADMIN_ID";
 FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
