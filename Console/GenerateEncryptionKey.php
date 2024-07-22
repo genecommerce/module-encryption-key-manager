@@ -58,7 +58,7 @@ class GenerateEncryptionKey extends Command
                 self::INPUT_KEY_KEY,
                 self::INPUT_KEY_KEY_SHORTCUT,
                 InputOption::VALUE_OPTIONAL,
-                'The crypt key to use'
+                'The new crypt key to use for re-encryption (32 chars). If not set, the new key will be generated'
             )
         ];
 
@@ -83,7 +83,9 @@ class GenerateEncryptionKey extends Command
         }
         if ($input->hasOption(self::INPUT_KEY_KEY)) {
             $newKey = $input->getOption(self::INPUT_KEY_KEY);
-            $output->writeln('<info>The new crypt key to use for re-encryption (32 chars). If not set, the new key will be generated</info>');
+            $output->writeln('<info>The provided crypt key will be used for reencryption.</info>');
+        }else{
+            $output->writeln('<info>A new key will be generated for reencryption, use "--key" to specify a custom key.</info>');
         }
 
         try {
