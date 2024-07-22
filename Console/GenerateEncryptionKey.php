@@ -77,15 +77,16 @@ class GenerateEncryptionKey extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $newKey = null;
+        if ($input->hasOption(self::INPUT_KEY_KEY)) {
+            $newKey = $input->getOption(self::INPUT_KEY_KEY);
+            $output->writeln('<info>The provided crypt key will be used for re-encryption.</info>');
+        } else {
+            $output->writeln('<info>A new key will be generated for re-encryption, use "--key" to specify a custom key.</info>');
+        }
+
         if (!$input->getOption(self::INPUT_KEY_FORCE)) {
             $output->writeln('<info>Run with --force to generate a new key. This will decrypt and reencrypt values in core_config_data and saved credit card info</info>');
             return Cli::RETURN_FAILURE;
-        }
-        if ($input->hasOption(self::INPUT_KEY_KEY)) {
-            $newKey = $input->getOption(self::INPUT_KEY_KEY);
-            $output->writeln('<info>The provided crypt key will be used for reencryption.</info>');
-        }else{
-            $output->writeln('<info>A new key will be generated for reencryption, use "--key" to specify a custom key.</info>');
         }
 
         try {
