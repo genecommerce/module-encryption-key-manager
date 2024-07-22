@@ -103,7 +103,7 @@ class ReencryptTfaData extends Command
                 $value = $row[$column];
                 $output->writeln("ciphertext_old: " . $value);
                 $valueDecrypted = $this->encryptor->decrypt($value);
-                if($valueDecrypted === null){
+                if(empty($valueDecrypted)){
                     $output->writeln("plaintext_old: is null");
                     continue;
                 }
