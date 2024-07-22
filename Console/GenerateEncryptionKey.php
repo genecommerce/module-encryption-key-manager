@@ -77,7 +77,7 @@ class GenerateEncryptionKey extends Command
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $newKey = null;
-        if ($input->hasOption(self::INPUT_KEY_KEY)) {
+        if ($input->getOption(self::INPUT_KEY_KEY)) {
             $newKey = $input->getOption(self::INPUT_KEY_KEY);
             $output->writeln('<info>The provided crypt key will be used for re-encryption.</info>');
         } else {
