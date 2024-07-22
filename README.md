@@ -32,9 +32,11 @@ This is a rough list of steps that should be followed to prevent attacks with Co
 
 This should be every merchant's **priority!** Install this module and generate a new key with: 
 
-`php bin/magento gene:encryption-key-manager:generate`
+`php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY]`
 
 This will force the JWT factory to use the newly generated key. Other areas of the application may continue to use the old keys. This step is the absolute priority and will help prevent attacks with CosmicSting.
+
+> Use the `--key` option to manually define the new key to use during re-encryption. If no custom key is provided, a new key will be generated.
 
 ## Fully rotate your old keys
 
@@ -54,7 +56,7 @@ adobe_user_profile
 2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
 3. **Generate a new key** `php bin/magento gene:encryption-key-manager:generate`
-   1. You can specify the new crypt key to use with 'php bin/magento gene:encryption-key-manager:generate --key=MY_32_CHAR_CRYPT_KEY'
+   1. You can specify the new crypt key to use with `php bin/magento gene:encryption-key-manager:generate --key=MY_32_CHAR_CRYPT_KEY`
    2. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
    3. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
