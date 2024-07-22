@@ -18,6 +18,7 @@ use Magento\Framework\App\State;
 class GenerateEncryptionKey extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
+    public const INPUT_SKIP_SAVED_CREDIT_CARDS = 'skip-saved-credit-cards';
     public const INPUT_KEY_KEY = 'key';
     public const INPUT_KEY_KEY_SHORTCUT = 'k';
 
@@ -53,6 +54,12 @@ class GenerateEncryptionKey extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Whether to force this action to take effect'
+            ),
+            new InputOption(
+                self::INPUT_SKIP_SAVED_CREDIT_CARDS,
+                null,
+                InputOption::VALUE_NONE,
+                'Whether to skip encrypting the sales_order_payment cc_number_enc data'
             ),
             new InputOption(
                 self::INPUT_KEY_KEY,
@@ -102,6 +109,9 @@ class GenerateEncryptionKey extends Command
             $this->emulation->startEnvironmentEmulation(0, 'adminhtml');
             $output->writeln('Generating a new encryption key using the magento core class');
             $this->changeEncryptionKey->setOutput($output);
+            $this->changeEncryptionKey->setSkipSavedCreditCards(
+                (bool)$input->getOption(self::INPUT_SKIP_SAVED_CREDIT_CARDS)
+            );
             $this->changeEncryptionKey->changeEncryptionKey($newKey);
             $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
