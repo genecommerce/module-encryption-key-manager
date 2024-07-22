@@ -54,8 +54,9 @@ adobe_user_profile
 2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
 3. **Generate a new key** `php bin/magento gene:encryption-key-manager:generate`
-   1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
-   1. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
+   1. You can specify the new crypt key to use with 'php bin/magento gene:encryption-key-manager:generate --key=MY_32_CHAR_CRYPT_KEY'
+   2. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index
+   3. `Magento\JwtUserToken\Model\SecretBasedJwksFactory` will only use the most recently generated key at the highest index
 4. **Fix missing config values** `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-unhandled-core-config-data`
 4. **Fix 2FA data** `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`

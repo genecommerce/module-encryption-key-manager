@@ -18,6 +18,8 @@ use Magento\Framework\App\State;
 class GenerateEncryptionKey extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
+    public const INPUT_KEY_KEY = 'key';
+    public const INPUT_KEY_KEY_SHORTCUT = 'k';
 
     /**
      * @param ChangeEncryptionKeyService $changeEncryptionKey
@@ -51,6 +53,12 @@ class GenerateEncryptionKey extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Whether to force this action to take effect'
+            ),
+            new InputOption(
+                self::INPUT_KEY_KEY,
+                self::INPUT_KEY_KEY_SHORTCUT,
+                InputOption::VALUE_OPTIONAL,
+                'The crypt key to use'
             )
         ];
 
@@ -68,9 +76,14 @@ class GenerateEncryptionKey extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $newKey = null;
         if (!$input->getOption(self::INPUT_KEY_FORCE)) {
             $output->writeln('<info>Run with --force to generate a new key. This will decrypt and reencrypt values in core_config_data and saved credit card info</info>');
             return Cli::RETURN_FAILURE;
+        }
+        if ($input->hasOption(self::INPUT_KEY_KEY)) {
+            $newKey = $input->getOption(self::INPUT_KEY_KEY);
+            $output->writeln('<info>The new crypt key to use for re-encryption (32 chars). If not set, the new key will be generated</info>');
         }
 
         try {
@@ -86,7 +99,7 @@ class GenerateEncryptionKey extends Command
             $this->emulation->startEnvironmentEmulation(0, 'adminhtml');
             $output->writeln('Generating a new encryption key using the magento core class');
             $this->changeEncryptionKey->setOutput($output);
-            $this->changeEncryptionKey->changeEncryptionKey();
+            $this->changeEncryptionKey->changeEncryptionKey($newKey);
             $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
 
