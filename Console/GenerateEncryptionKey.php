@@ -113,6 +113,7 @@ class GenerateEncryptionKey extends Command
                 (bool)$input->getOption(self::INPUT_SKIP_SAVED_CREDIT_CARDS)
             );
             $this->changeEncryptionKey->changeEncryptionKey($newKey);
+            $this->changeEncryptionKey->reEncryptEnvConfigurationValues();
             $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
 

@@ -86,10 +86,6 @@ class ChangeEncryptionKey extends MageChanger
         $this->writeOutput('_reEncryptSystemConfigurationValues - start');
         parent::_reEncryptSystemConfigurationValues();
         $this->writeOutput('_reEncryptSystemConfigurationValues - end');
-
-        $this->writeOutput('_reEncryptEnvConfigurationValues - start');
-        $this->_reEncryptEnvConfigurationValues();
-        $this->writeOutput('_reEncryptEnvConfigurationValues - end');
     }
 
     /**
@@ -133,14 +129,16 @@ class ChangeEncryptionKey extends MageChanger
      * @throws FileSystemException
      * @throws RuntimeException
      */
-    protected function _reEncryptEnvConfigurationValues()
+    public function reEncryptEnvConfigurationValues(): void
     {
+        $this->writeOutput('_reEncryptEnvConfigurationValues - start');
         $systemConfig = $this->deploymentConfig->get('system');
         $systemConfig = $this->iterateSystemConfig($systemConfig);
 
         $encryptSegment = new ConfigData(ConfigFilePool::APP_ENV);
         $encryptSegment->set('system', $systemConfig);
         $this->writer->saveConfig([$encryptSegment->getFileKey() => $encryptSegment->getData()]);
+        $this->writeOutput('_reEncryptEnvConfigurationValues - end');
     }
 
     /**
@@ -150,7 +148,7 @@ class ChangeEncryptionKey extends MageChanger
      * @return array
      * @throws \Exception
      */
-    private function iterateSystemConfig(array $systemConfig)
+    private function iterateSystemConfig(array $systemConfig): array
     {
         foreach ($systemConfig as $key => &$value) {
             if (is_array($value)) {
