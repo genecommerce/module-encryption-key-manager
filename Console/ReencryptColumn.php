@@ -124,11 +124,15 @@ class ReencryptColumn extends Command
             $tableName = $this->resourceConnection->getTableName($table);
             $connection = $this->resourceConnection->getConnection();
             $field = $connection->quoteIdentifier(sprintf('%s.%s', $tableName, $column));
-
             $select = $connection->select()
-                ->from($tableName, [$identifier, "$column"])
-                ->where("($field LIKE '%_:_:____%' OR $field LIKE '%__:_:____%')")
-                ->where("$field NOT LIKE ?", "%$latestKeyNumber:_:__%");
+                    ->from($tableName, [$identifier, "$column"]);
+            if ($jsonField === null) {
+                $select = $select->where("($field LIKE '_:_:____%' OR $field LIKE '__:_:____%')")
+                    ->where("$field NOT LIKE ?", "$latestKeyNumber:_:__%");
+            } else {
+                $select = $select->where("($field LIKE '{%_:_:____%}' OR $field LIKE '{%__:_:____%}')")
+                    ->where("$field NOT LIKE ?", "{%$latestKeyNumber:_:__%}");
+            }
             $result = $connection->fetchAll($select);
             if (empty($result)) {
                 $output->writeln('No old entries found');
