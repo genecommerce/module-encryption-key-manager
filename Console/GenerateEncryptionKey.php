@@ -105,7 +105,11 @@ class GenerateEncryptionKey extends Command
              *
              * @see \Magento\EncryptionKey\Controller\Adminhtml\Crypt\Key\Save::execute()
              */
-            $this->state->setAreaCode('adminhtml');
+            try {
+                $this->state->setAreaCode('adminhtml');
+            } catch (\Magento\Framework\Exception\LocalizedException $exception) {
+                // Area code is already set
+            }
             $this->emulation->startEnvironmentEmulation(0, 'adminhtml');
             $output->writeln('Generating a new encryption key using the magento core class');
             $this->changeEncryptionKey->setOutput($output);
