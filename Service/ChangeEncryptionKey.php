@@ -2,7 +2,18 @@
 declare(strict_types=1);
 namespace Gene\EncryptionKeyManager\Service;
 
+use Magento\Config\Model\Config\Structure;
 use Magento\EncryptionKey\Model\ResourceModel\Key\Change as MageChanger;
+use Magento\Framework\App\DeploymentConfig;
+use Magento\Framework\App\DeploymentConfig\Writer;
+use Magento\Framework\Config\Data\ConfigData;
+use Magento\Framework\Config\File\ConfigFilePool;
+use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\RuntimeException;
+use Magento\Framework\Filesystem;
+use Magento\Framework\Math\Random;
+use Magento\Framework\Model\ResourceModel\Db\Context;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ChangeEncryptionKey extends MageChanger
@@ -12,6 +23,29 @@ class ChangeEncryptionKey extends MageChanger
 
     /** @var bool  */
     private $skipSavedCreditCards = false;
+
+    /**
+     * @param Context $context
+     * @param Filesystem $filesystem
+     * @param Structure $structure
+     * @param EncryptorInterface $encryptor
+     * @param Writer $writer
+     * @param Random $random
+     * @param DeploymentConfig $deploymentConfig
+     * @param $connectionName
+     */
+    public function __construct(
+        Context $context,
+        Filesystem $filesystem,
+        Structure $structure,
+        EncryptorInterface $encryptor,
+        Writer $writer,
+        Random $random,
+        private readonly DeploymentConfig $deploymentConfig,
+        $connectionName = null,
+    ) {
+        parent::__construct($context, $filesystem, $structure, $encryptor, $writer, $random, $connectionName);
+    }
 
     /**
      * @param OutputInterface $output
@@ -52,6 +86,10 @@ class ChangeEncryptionKey extends MageChanger
         $this->writeOutput('_reEncryptSystemConfigurationValues - start');
         parent::_reEncryptSystemConfigurationValues();
         $this->writeOutput('_reEncryptSystemConfigurationValues - end');
+
+        $this->writeOutput('_reEncryptEnvConfigurationValues - start');
+        $this->_reEncryptEnvConfigurationValues();
+        $this->writeOutput('_reEncryptEnvConfigurationValues - end');
     }
 
     /**
@@ -86,5 +124,42 @@ class ChangeEncryptionKey extends MageChanger
             );
         }
         $this->writeOutput('_reEncryptCreditCardNumbers - end');
+    }
+
+    /**
+     * Gather all encrypted system config values from env.php and re-encrypt them
+     *
+     * @return void
+     * @throws FileSystemException
+     * @throws RuntimeException
+     */
+    protected function _reEncryptEnvConfigurationValues()
+    {
+        $systemConfig = $this->deploymentConfig->get('system');
+        $systemConfig = $this->iterateSystemConfig($systemConfig);
+
+        $encryptSegment = new ConfigData(ConfigFilePool::APP_ENV);
+        $encryptSegment->set('system', $systemConfig);
+        $this->writer->saveConfig([$encryptSegment->getFileKey() => $encryptSegment->getData()]);
+    }
+
+    /**
+     * Recursively iterate through the system configuration and re-encrypt any encrypted values
+     *
+     * @param array $systemConfig
+     * @return array
+     * @throws \Exception
+     */
+    private function iterateSystemConfig(array $systemConfig)
+    {
+        foreach ($systemConfig as $key => &$value) {
+            if (is_array($value)) {
+                $value = $this->iterateSystemConfig($value);
+            } elseif (is_string($value) && preg_match('/^\d+:\d+:.*$/', $value)) {
+                $value = $this->encryptor->encrypt($this->encryptor->decrypt($value));
+            }
+        }
+
+        return $systemConfig;
     }
 }
