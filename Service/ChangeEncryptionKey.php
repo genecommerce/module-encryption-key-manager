@@ -131,14 +131,14 @@ class ChangeEncryptionKey extends MageChanger
      */
     public function reEncryptEnvConfigurationValues(): void
     {
-        $this->writeOutput('_reEncryptEnvConfigurationValues - start');
+        $this->writeOutput('reEncryptEnvConfigurationValues - start');
         $systemConfig = $this->deploymentConfig->get('system');
         $systemConfig = $this->iterateSystemConfig($systemConfig);
 
         $encryptSegment = new ConfigData(ConfigFilePool::APP_ENV);
         $encryptSegment->set('system', $systemConfig);
         $this->writer->saveConfig([$encryptSegment->getFileKey() => $encryptSegment->getData()]);
-        $this->writeOutput('_reEncryptEnvConfigurationValues - end');
+        $this->writeOutput('reEncryptEnvConfigurationValues - end');
     }
 
     /**
