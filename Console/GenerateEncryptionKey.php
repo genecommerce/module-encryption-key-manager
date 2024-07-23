@@ -3,6 +3,7 @@ declare(strict_types=1);
 namespace Gene\EncryptionKeyManager\Console;
 
 use Gene\EncryptionKeyManager\Service\ChangeEncryptionKey as ChangeEncryptionKeyService;
+use Gene\EncryptionKeyManager\Service\ReencryptEnvSystemConfigurationValues;
 use Magento\Framework\App\Config\Storage\WriterInterface;
 use Magento\Framework\Encryption\Encryptor;
 use Magento\Framework\App\Config\ScopeConfigInterface;
@@ -38,7 +39,8 @@ class GenerateEncryptionKey extends Command
         private readonly WriterInterface $configWriter,
         private readonly Emulation $emulation,
         private readonly State $state,
-        private readonly Encryptor $encryptor
+        private readonly Encryptor $encryptor,
+        private readonly ReencryptEnvSystemConfigurationValues $reencryptEnvSystemConfigurationValues
     ) {
         parent::__construct();
     }
@@ -113,7 +115,9 @@ class GenerateEncryptionKey extends Command
                 (bool)$input->getOption(self::INPUT_SKIP_SAVED_CREDIT_CARDS)
             );
             $this->changeEncryptionKey->changeEncryptionKey($newKey);
-            $this->changeEncryptionKey->reEncryptEnvConfigurationValues();
+            $output->writeln('reEncryptEnvConfigurationValues - start');
+            $this->reencryptEnvSystemConfigurationValues->execute();
+            $output->writeln('reEncryptEnvConfigurationValues - end');
             $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
 
