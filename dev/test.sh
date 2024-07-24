@@ -30,6 +30,10 @@ FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
 
+echo "Stubbing in a large volume of data to sales_order_payment"
+vendor/bin/n98-magerun2 db:query "delete from sales_order_payment where parent_id=1";
+
+
 echo "";echo "";
 
 echo "Verifying commands need to use --force"
