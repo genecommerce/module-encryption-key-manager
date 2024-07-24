@@ -87,7 +87,25 @@ fi
 echo "";echo "";
 
 echo "Generating a new encryption key"
-php bin/magento gene:encryption-key-manager:generate --force
+php bin/magento gene:encryption-key-manager:generate --force  > test.txt
+grep -q '_reEncryptSystemConfigurationValues - start' test.txt
+grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
+grep -q '_reEncryptCreditCardNumbers - start' test.txt
+grep -q '_reEncryptCreditCardNumbers - end'   test.txt
+echo "PASS"
+echo "";echo "";
+
+echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
+php bin/magento gene:encryption-key-manager:generate --force --skip-saved-credit-cards > test.txt
+grep -q '_reEncryptSystemConfigurationValues - start' test.txt
+grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
+grep -q '_reEncryptCreditCardNumbers - skipping' test.txt
+if grep -q '_reEncryptCreditCardNumbers - start' test.txt; then
+    echo "FAIL: We should never start on _reEncryptCreditCardNumbers with --skip-saved-credit-cards" && false
+fi
+if grep -q '_reEncryptCreditCardNumbers - end' test.txt; then
+    echo "FAIL: We should never end on _reEncryptCreditCardNumbers with --skip-saved-credit-cards" && false
+fi
 echo "PASS"
 echo "";echo "";
 

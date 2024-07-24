@@ -10,6 +10,9 @@ class ChangeEncryptionKey extends MageChanger
     /** @var OutputInterface|null */
     private $output;
 
+    /** @var bool  */
+    private $skipSavedCreditCards = false;
+
     /**
      * @param OutputInterface $output
      * @return void
@@ -17,6 +20,15 @@ class ChangeEncryptionKey extends MageChanger
     public function setOutput(OutputInterface $output)
     {
         $this->output = $output;
+    }
+
+    /**
+     * @param bool $skipSavedCreditCards
+     * @return void
+     */
+    public function setSkipSavedCreditCards($skipSavedCreditCards)
+    {
+        $this->skipSavedCreditCards = (bool) $skipSavedCreditCards;
     }
 
     /**
@@ -51,6 +63,10 @@ class ChangeEncryptionKey extends MageChanger
      */
     protected function _reEncryptCreditCardNumbers()
     {
+        if ($this->skipSavedCreditCards) {
+            $this->writeOutput('_reEncryptCreditCardNumbers - skipping');
+            return;
+        }
         $this->writeOutput('_reEncryptCreditCardNumbers - start');
         $table = $this->getTable('sales_order_payment');
         $select = $this->getConnection()->select()->from($table, ['entity_id', 'cc_number_enc']);

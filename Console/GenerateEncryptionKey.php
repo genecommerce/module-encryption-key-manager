@@ -18,6 +18,9 @@ use Magento\Framework\App\State;
 class GenerateEncryptionKey extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
+    public const INPUT_SKIP_SAVED_CREDIT_CARDS = 'skip-saved-credit-cards';
+    public const INPUT_KEY_KEY = 'key';
+    public const INPUT_KEY_KEY_SHORTCUT = 'k';
 
     /**
      * @param ChangeEncryptionKeyService $changeEncryptionKey
@@ -51,6 +54,18 @@ class GenerateEncryptionKey extends Command
                 null,
                 InputOption::VALUE_NONE,
                 'Whether to force this action to take effect'
+            ),
+            new InputOption(
+                self::INPUT_SKIP_SAVED_CREDIT_CARDS,
+                null,
+                InputOption::VALUE_NONE,
+                'Whether to skip encrypting the sales_order_payment cc_number_enc data'
+            ),
+            new InputOption(
+                self::INPUT_KEY_KEY,
+                self::INPUT_KEY_KEY_SHORTCUT,
+                InputOption::VALUE_OPTIONAL,
+                'The new crypt key to use for re-encryption (32 chars). If not set, the new key will be generated'
             )
         ];
 
@@ -68,6 +83,14 @@ class GenerateEncryptionKey extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $newKey = null;
+        if ($input->getOption(self::INPUT_KEY_KEY)) {
+            $newKey = $input->getOption(self::INPUT_KEY_KEY);
+            $output->writeln('<info>The provided crypt key will be used for re-encryption.</info>');
+        } else {
+            $output->writeln('<info>A new key will be generated for re-encryption, use "--key" to specify a custom key.</info>');
+        }
+
         if (!$input->getOption(self::INPUT_KEY_FORCE)) {
             $output->writeln('<info>Run with --force to generate a new key. This will decrypt and reencrypt values in core_config_data and saved credit card info</info>');
             return Cli::RETURN_FAILURE;
@@ -82,11 +105,18 @@ class GenerateEncryptionKey extends Command
              *
              * @see \Magento\EncryptionKey\Controller\Adminhtml\Crypt\Key\Save::execute()
              */
-            $this->state->setAreaCode('adminhtml');
+            try {
+                $this->state->setAreaCode('adminhtml');
+            } catch (\Magento\Framework\Exception\LocalizedException $exception) {
+                // Area code is already set
+            }
             $this->emulation->startEnvironmentEmulation(0, 'adminhtml');
             $output->writeln('Generating a new encryption key using the magento core class');
             $this->changeEncryptionKey->setOutput($output);
-            $this->changeEncryptionKey->changeEncryptionKey();
+            $this->changeEncryptionKey->setSkipSavedCreditCards(
+                (bool)$input->getOption(self::INPUT_SKIP_SAVED_CREDIT_CARDS)
+            );
+            $this->changeEncryptionKey->changeEncryptionKey($newKey);
             $this->emulation->stopEnvironmentEmulation();
             $output->writeln('Cleaning cache');
 
