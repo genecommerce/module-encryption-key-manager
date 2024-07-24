@@ -92,7 +92,7 @@ php bin/magento gene:encryption-key-manager:generate --force  > test.txt
 if grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php; then
     echo "FAIL: The old encrypted value in env.php was not updated" && false
 fi
-grep -q "'name'" app/etc/env.php | grep "1:3:"
+grep "'name'" app/etc/env.php | grep -q "1:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - start' test.txt
@@ -102,7 +102,7 @@ echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
 php bin/magento gene:encryption-key-manager:generate --force --skip-saved-credit-cards > test.txt
-grep -q "'name'" app/etc/env.php | grep "2:3:"
+grep "'name'" app/etc/env.php | grep -q "2:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - skipping' test.txt

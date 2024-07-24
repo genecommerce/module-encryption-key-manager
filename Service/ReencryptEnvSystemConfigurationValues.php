@@ -8,21 +8,25 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\DeploymentConfig\Writer;
 use Magento\Framework\Config\Data\ConfigData;
 use Magento\Framework\Config\File\ConfigFilePool;
+use Magento\Framework\Encryption\EncryptorInterfaceFactory;
 use Magento\Framework\Encryption\EncryptorInterface;
 use Magento\Framework\Exception\FileSystemException;
 use Magento\Framework\Exception\RuntimeException;
 
 class ReencryptEnvSystemConfigurationValues
 {
+    /** @var EncryptorInterface|null  */
+    private $encryptor = null;
+
     /**
      * @param DeploymentConfig $deploymentConfig
      * @param Writer $writer
-     * @param EncryptorInterface $encryptor
+     * @param EncryptorInterfaceFactory $encryptorFactory
      */
     public function __construct(
         private readonly DeploymentConfig $deploymentConfig,
         private readonly Writer $writer,
-        private readonly EncryptorInterface $encryptor
+        private readonly EncryptorInterfaceFactory $encryptorFactory
     ) {
     }
 
@@ -36,6 +40,8 @@ class ReencryptEnvSystemConfigurationValues
      */
     public function execute(): void
     {
+        $this->deploymentConfig->resetData();
+        $this->encryptor = $this->encryptorFactory->create();
         $systemConfig = $this->deploymentConfig->get('system');
         $systemConfig = $this->iterateSystemConfig($systemConfig);
 
