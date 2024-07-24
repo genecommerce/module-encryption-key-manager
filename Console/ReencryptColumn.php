@@ -6,6 +6,7 @@ use Magento\Framework\App\ResourceConnection;
 use Magento\Framework\App\CacheInterface;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Encryption\EncryptorInterface;
+use Magento\Framework\Serialize\Serializer\Json as JsonSerializer;
 use Magento\Framework\Console\Cli;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -21,14 +22,17 @@ class ReencryptColumn extends Command
     public const INPUT_KEY_COLUMN = 'column';
 
     /**
-     * @param DeploymentConfig $deploymentConfig
-     * @param ResourceConnection $resourceConnection
-     * @param EncryptorInterface $encryptor
-     * @param CacheInterface $cache
+     * @param Magento\Framework\App\DeploymentConfig $deploymentConfig
+     * @param Magento\Framework\App\ResourceConnection $resourceConnection
+     * @param Magento\Framework\Serialize\Serializer\Json $jsonSerializer
+     * @param Magento\Framework\Encryption\EncryptorInterface $encryptor
+     * @param Magento\Framework\App\CacheInterface $cache
+     * @return void
      */
     public function __construct(
         private readonly DeploymentConfig $deploymentConfig,
         private readonly ResourceConnection $resourceConnection,
+        private readonly JsonSerializer $jsonSerializer,
         private readonly EncryptorInterface $encryptor,
         private readonly CacheInterface $cache
     ) {
@@ -105,20 +109,30 @@ class ReencryptColumn extends Command
             if (!strlen($column)) {
                 throw new \Exception('Provide an column');
             }
-            $output->writeln("Looking for '$column' in '$table', identified by '$identifier'");
-
+            $jsonField = null;
+            if (strpos($column, '.') !== false) {
+                list($column, $jsonField) = explode('.', $column);
+                $output->writeln(
+                    "Looking for JSON field '$jsonField.$column' in '$table', identified by '$identifier'"
+                );
+            } else {
+                $output->writeln("Looking for '$column' in '$table', identified by '$identifier'");
+            }
             /**
              * @see \Magento\Framework\Model\ResourceModel\Db\AbstractDb::_getLoadSelect()
              */
             $tableName = $this->resourceConnection->getTableName($table);
             $connection = $this->resourceConnection->getConnection();
             $field = $connection->quoteIdentifier(sprintf('%s.%s', $tableName, $column));
-
             $select = $connection->select()
-                ->from($tableName, [$identifier, "$column"])
-                ->where("($field LIKE '_:_:____%' OR $field LIKE '__:_:____%')")
-                ->where("$field NOT LIKE ?", "$latestKeyNumber:_:__%");
-
+                    ->from($tableName, [$identifier, "$column"]);
+            if ($jsonField === null) {
+                $select = $select->where("($field LIKE '_:_:____%' OR $field LIKE '__:_:____%')")
+                    ->where("$field NOT LIKE ?", "$latestKeyNumber:_:__%");
+            } else {
+                $select = $select->where("($field LIKE '{%_:_:____%}' OR $field LIKE '{%__:_:____%}')")
+                    ->where("$field NOT LIKE ?", "{%$latestKeyNumber:_:__%}");
+            }
             $result = $connection->fetchAll($select);
             if (empty($result)) {
                 $output->writeln('No old entries found');
@@ -127,13 +141,26 @@ class ReencryptColumn extends Command
             $connection->beginTransaction();
             foreach ($result as $row) {
                 $output->writeln(str_pad('', 120, '#'));
-                $output->writeln("$identifier: {$row[$identifier]}");
                 $value = $row[$column];
+                $fieldData = [];
+                if ($jsonField !== null) {
+                    $fieldData = $this->jsonSerializer->unserialize($value);
+                    $value = $fieldData[$jsonField] ?? '';
+                }
+                if ($value === '') {
+                    continue;
+                }
+                $output->writeln("$identifier: {$row[$identifier]}");
                 $output->writeln("ciphertext_old: " . $value);
                 $valueDecrypted = $this->encryptor->decrypt($value);
                 $output->writeln("plaintext: " . $valueDecrypted);
                 $valueEncrypted = $this->encryptor->encrypt($valueDecrypted);
                 $output->writeln("ciphertext_new: " . $valueEncrypted);
+
+                if ($jsonField !== null) {
+                    $fieldData[$jsonField] = $valueEncrypted;
+                    $valueEncrypted = $this->jsonSerializer->serialize($fieldData);
+                }
 
                 if ($input->getOption(self::INPUT_KEY_FORCE)) {
                     $connection->update(

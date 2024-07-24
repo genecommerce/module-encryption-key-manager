@@ -183,7 +183,7 @@ Done
 
 ## bin/magento gene:encryption-key-manager:reencrypt-column
 
-This allows you to target a specific column for re-encryption.
+This allows you to target a specific column for re-encryption. If the column contains JSON, you can target it using dot notation: `column.field`.
 
 This command runs in dry run mode by default, do that as a first pass to see the changes that will be made. When you are happy run with `--force`.
 
