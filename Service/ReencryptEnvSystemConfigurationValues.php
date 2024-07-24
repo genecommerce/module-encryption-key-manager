@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Gene\EncryptionKeyManager\Service;
 
+use Magento\Deploy\Model\DeploymentConfig\Hash;
 use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\App\DeploymentConfig\Writer;
 use Magento\Framework\Config\Data\ConfigData;
@@ -22,11 +23,13 @@ class ReencryptEnvSystemConfigurationValues
      * @param DeploymentConfig $deploymentConfig
      * @param Writer $writer
      * @param EncryptorInterfaceFactory $encryptorFactory
+     * @param Hash $hash
      */
     public function __construct(
         private readonly DeploymentConfig $deploymentConfig,
         private readonly Writer $writer,
-        private readonly EncryptorInterfaceFactory $encryptorFactory
+        private readonly EncryptorInterfaceFactory $encryptorFactory,
+        private readonly Hash $hash
     ) {
     }
 
@@ -48,6 +51,11 @@ class ReencryptEnvSystemConfigurationValues
         $encryptSegment = new ConfigData(ConfigFilePool::APP_ENV);
         $encryptSegment->set('system', $systemConfig);
         $this->writer->saveConfig([$encryptSegment->getFileKey() => $encryptSegment->getData()]);
+
+        /**
+         * @see \Magento\Deploy\Console\Command\App\ConfigImport\Processor::execute()
+         */
+        $this->hash->regenerate('system');
     }
 
     /**
