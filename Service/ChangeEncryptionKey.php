@@ -99,25 +99,100 @@ class ChangeEncryptionKey extends MageChanger
 
             $this->writeOutput((string)$select, OutputInterface::VERBOSITY_VERBOSE);
 
+            /**
+             * @see https://github.com/magento/inventory/blob/750be5b07053331bc0bf3cb0f4d19366a67694f4/Inventory/Model/ResourceModel/SourceItem/SaveMultiple.php#L165-L188
+             */
+            $pairsToUpdate = [];
             $attributeValues = $this->getConnection()->fetchPairs($select);
             foreach ($attributeValues as $valueId => $value) {
                 if (!$value) {
                     continue;
                 }
-                // TODO can we collect these, and do the updates in batches as the updates are the limiting factor
-                // https://stackoverflow.com/a/3466
-                $this->getConnection()->update(
-                    $table,
-                    ['cc_number_enc' => $this->encryptor->encrypt($this->encryptor->decrypt($value))],
-                    ['entity_id = ?' => (int)$valueId]
-                );
+                // TODO i think the encryption is the limiting factor here
+                // TODO i can insert 1 million rows as asdfasdfsdfasdf in ~8 seconds locally but ~2 mins for the full process
+//                $pairsToUpdate[(int)$valueId] = 'asdfasdfsdfasdf';
+                $pairsToUpdate[(int)$valueId] = $this->encryptor->encrypt($this->encryptor->decrypt($value));
                 $updatedCount++;
             }
+
+            $columnsSql = $this->buildColumnsSqlPart(['entity_id', 'cc_number_enc']);
+            $valuesSql = $this->buildValuesSqlPart($pairsToUpdate);
+            $onDuplicateSql = $this->buildOnDuplicateSqlPart(['cc_number_enc']);
+            $bind = $this->getSqlBindData($pairsToUpdate);
+
+            // todo worth checking this isnt artifically inflating the auto increment id
+            $insertSql = sprintf(
+                'INSERT INTO `%s` (%s) VALUES %s %s',
+                $table,
+                $columnsSql,
+                $valuesSql,
+                $onDuplicateSql
+            );
+            $this->getConnection()->query($insertSql, $bind);
             $currentMin = $currentMax;
             $this->writeOutput("running total records updated: $updatedCount", OutputInterface::VERBOSITY_VERBOSE);
         }
 
         $this->writeOutput("_reEncryptCreditCardNumbers - total records updated:   $updatedCount");
         $this->writeOutput('_reEncryptCreditCardNumbers - end');
+    }
+
+    /**
+     * Build sql query for on duplicate event
+     *
+     * @param array $fields
+     * @return string
+     */
+    private function buildOnDuplicateSqlPart(array $fields): string
+    {
+        $connection = $this->getConnection();
+        $processedFields = [];
+        foreach ($fields as $field) {
+            $processedFields[] = sprintf('%1$s = VALUES(%1$s)', $connection->quoteIdentifier($field));
+        }
+        $sql = 'ON DUPLICATE KEY UPDATE ' . implode(', ', $processedFields);
+        return $sql;
+    }
+
+    /**
+     * Build column sql part
+     *
+     * @param array $columns
+     * @return string
+     */
+    private function buildColumnsSqlPart(array $columns): string
+    {
+        $connection = $this->getConnection();
+        $processedColumns = array_map([$connection, 'quoteIdentifier'], $columns);
+        $sql = implode(', ', $processedColumns);
+        return $sql;
+    }
+
+    /**
+     * Build sql query for values
+     *
+     * @param array $rows
+     * @return string
+     */
+    private function buildValuesSqlPart(array $rows): string
+    {
+        $sql = rtrim(str_repeat('(?, ?), ', count($rows)), ', ');
+        return $sql;
+    }
+
+    /**
+     * Get Sql bind data
+     *
+     * @param array $rows
+     * @return array
+     */
+    private function getSqlBindData(array $rows): array
+    {
+        $bind = [];
+        foreach ($rows as $id => $encryptedValue) {
+            $bind[] = $id;
+            $bind[] = $encryptedValue;
+        }
+        return $bind;
     }
 }
