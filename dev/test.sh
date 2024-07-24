@@ -12,6 +12,9 @@ CURRENT_TIMESTAMP=$(date +%s)
 ADMIN="adminuser$CURRENT_TIMESTAMP"
 PASSWORD='password123'
 
+echo "Putting magento into production mode, static content has already been generated"
+php bin/magento deploy:mode:set production -s
+
 echo "Stubbing in some test data"
 vendor/bin/n98-magerun2 --version
 vendor/bin/n98-magerun2 admin:user:create --no-interaction --admin-user "$ADMIN" --admin-email "example$CURRENT_TIMESTAMP@example.com" --admin-password $PASSWORD --admin-firstname adminuser --admin-lastname adminuser
