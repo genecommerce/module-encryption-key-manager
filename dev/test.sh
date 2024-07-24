@@ -38,7 +38,7 @@ echo "";echo "";
 
 echo "Verifying commands need to use --force"
 
-php bin/magento gene:encryption-key-manager:generate > test.txt || true;
+php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
