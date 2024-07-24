@@ -57,7 +57,10 @@ class ReencryptEnvSystemConfigurationValues
             if (is_array($value)) {
                 $value = $this->iterateSystemConfig($value);
             } elseif (is_string($value) && preg_match('/^\d+:\d+:.*$/', $value)) {
-                $value = $this->encryptor->encrypt($this->encryptor->decrypt($value));
+                $decryptedValue = $this->encryptor->decrypt($value);
+                if ($decryptedValue) {
+                    $value = $this->encryptor->encrypt($decryptedValue);
+                }
             }
         }
 

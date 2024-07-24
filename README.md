@@ -133,6 +133,7 @@ Done
 
 - Use the `--key` option to manually define the new key to use during re-encryption. If no custom key is provided, a new key will be generated.
 - Use the `--skip-saved-credit-cards` flag to skip re-encrypting the `sales_order_payment` `cc_number_enc` data. This table can be very large, and many stores will have no data saved in this column.
+- This will automatically re-encrypt any `system` values in `app/etc/env.php`
 
 ## bin/magento gene:encryption-key-manager:invalidate
 

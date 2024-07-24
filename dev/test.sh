@@ -4,6 +4,8 @@ err_report() {
     echo "Error on line $1"
     echo "last test.txt was"
     cat test.txt
+    echo "last app/etc/env.php was"
+    cat app/etc/env.php
 }
 trap 'err_report $LINENO' ERR
 
@@ -17,6 +19,10 @@ vendor/bin/n98-magerun2 --version
 vendor/bin/n98-magerun2 admin:user:create --no-interaction --admin-user "$ADMIN" --admin-email "example$CURRENT_TIMESTAMP@example.com" --admin-password $PASSWORD --admin-firstname adminuser --admin-lastname adminuser
 vendor/bin/n98-magerun2 config:store:set zzzzz/zzzzz/zzzz xyz123 --encrypt
 
+echo "Spoofing an encrypted config value into env.php"
+ENCRYPTED_ENV_VALUE=$(vendor/bin/n98-magerun2 dev:encrypt 'Some Base Name')
+bin/magento config:set --lock-env general/store_information/name "$ENCRYPTED_ENV_VALUE"
+
 ADMIN_ID=$(vendor/bin/n98-magerun2 db:query "SELECT user_id FROM admin_user LIMIT 1")
 ADMIN_ID="${ADMIN_ID: -1}"
 FAKE_GOOGLE_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'googletokenabc123')
@@ -26,6 +32,7 @@ echo "Generating 2FA data for admin user $ADMIN in tfa_user_config"
 vendor/bin/n98-magerun2 db:query "delete from tfa_user_config where user_id=$ADMIN_ID";
 vendor/bin/n98-magerun2 db:query "insert into tfa_user_config(user_id, encoded_config) values ($ADMIN_ID, '$TWOFA_JSON_ENCRYPTED');"
 vendor/bin/n98-magerun2 db:query "select user_id, encoded_config from tfa_user_config where user_id=$ADMIN_ID";
+
 FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
@@ -80,7 +87,12 @@ fi
 echo "";echo "";
 
 echo "Generating a new encryption key"
+grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php
 php bin/magento gene:encryption-key-manager:generate --force  > test.txt
+if grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php; then
+    echo "FAIL: The old encrypted value in env.php was not updated" && false
+fi
+grep -q "'name'" app/etc/env.php | grep "1:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - start' test.txt
@@ -90,6 +102,7 @@ echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
 php bin/magento gene:encryption-key-manager:generate --force --skip-saved-credit-cards > test.txt
+grep -q "'name'" app/etc/env.php | grep "2:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - skipping' test.txt
@@ -212,6 +225,7 @@ echo "A peek at an example log"
 grep 'gene encryption manager' var/log/system.log | tail -1
 
 echo "A peek at the env.php"
+grep "'name'" app/etc/env.php
 grep -A10 "'crypt' =>" app/etc/env.php
 echo "";echo "";
 echo "DONE"
