@@ -71,9 +71,10 @@ adobe_user_profile
     4. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
     5. `bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
     6. `bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
+6. Flush the cache `php bin/magento cache:flush`
 6. At this point you should have all your data migrated to your new encryption key, to help you verify this you can do the following
-   1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1`
-   2. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
+   1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
+   2. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1`
    3. Monitor your logs for "gene encryption manager" to verify nothing is still using the old key
 7. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
