@@ -49,6 +49,7 @@ vendor/bin/n98-magerun2 db:query "select * from fake_json_table";
 
 echo "Stubbing in a large volume of data to sales_order_payment"
 php vendor/gene/module-encryption-key-manager/dev/stub_sales_order_payment.php
+vendor/bin/n98-magerun2 db:query "select cc_number_enc from sales_order_payment where parent_id=1 limit 5";
 
 echo "";echo "";
 
@@ -112,6 +113,7 @@ grep -q '_reEncryptCreditCardNumbers - start' test.txt
 grep -q '_reEncryptCreditCardNumbers - end'   test.txt
 echo "PASS"
 cat test.txt
+vendor/bin/n98-magerun2 db:query "select cc_number_enc from sales_order_payment where parent_id=1 limit 5";
 echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
