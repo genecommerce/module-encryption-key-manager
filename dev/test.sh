@@ -48,7 +48,7 @@ vendor/bin/n98-magerun2 db:query "insert into fake_json_table(text_column) value
 vendor/bin/n98-magerun2 db:query "select * from fake_json_table";
 
 echo "Stubbing in a large volume of data to sales_order_payment"
-vendor/bin/n98-magerun2 db:query "delete from sales_order_payment where parent_id=1";
+php vendor/gene/module-encryption-key-manager/dev/stub_sales_order_payment.php
 
 echo "";echo "";
 
