@@ -54,12 +54,13 @@ echo "";echo "";
 
 echo "Verifying commands need to use --force"
 
-php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
+time php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
     echo "FAIL: generate needs to run with force" && false
 fi
+cat test.txt
 
 php bin/magento gene:encryption-key-manager:invalidate > test.txt || true
 if grep -q 'Run with --force' test.txt; then
