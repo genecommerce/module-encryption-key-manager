@@ -54,13 +54,12 @@ echo "";echo "";
 
 echo "Verifying commands need to use --force"
 
-time php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
+php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
     echo "FAIL: generate needs to run with force" && false
 fi
-cat test.txt
 
 php bin/magento gene:encryption-key-manager:invalidate > test.txt || true
 if grep -q 'Run with --force' test.txt; then
@@ -102,7 +101,7 @@ echo "";echo "";
 
 echo "Generating a new encryption key"
 grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php
-php bin/magento gene:encryption-key-manager:generate --force  > test.txt
+time php bin/magento gene:encryption-key-manager:generate --force  > test.txt
 if grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php; then
     echo "FAIL: The old encrypted value in env.php was not updated" && false
 fi
@@ -112,6 +111,7 @@ grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - start' test.txt
 grep -q '_reEncryptCreditCardNumbers - end'   test.txt
 echo "PASS"
+cat test.txt
 echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
