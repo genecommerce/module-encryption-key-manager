@@ -42,7 +42,8 @@ echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
 
 echo "Generating a fake json column"
 FAKE_JSON_PASSWORD=$(vendor/bin/n98-magerun2 dev:encrypt 'jsonpasswordabc123')
-FAKE_JSON_PAYLOAD="{\"user\": \"foobar\", \"password\": \"$FAKE_JSON_PASSWORD\", \"request_url\": \"\"}"
+FAKE_JSON_USERNAME=$(vendor/bin/n98-magerun2 dev:encrypt 'foobar')
+FAKE_JSON_PAYLOAD="{\"user\": \"$FAKE_JSON_USERNAME\", \"password\": \"$FAKE_JSON_PASSWORD\", \"request_url\": \"\"}"
 vendor/bin/n98-magerun2 db:query 'DROP TABLE IF EXISTS fake_json_table; CREATE TABLE fake_json_table (id INT AUTO_INCREMENT PRIMARY KEY, text_column TEXT);'
 vendor/bin/n98-magerun2 db:query "insert into fake_json_table(text_column) values ('$FAKE_JSON_PAYLOAD');"
 vendor/bin/n98-magerun2 db:query "select * from fake_json_table";
@@ -165,14 +166,26 @@ php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id 
 echo "PASS"
 echo "";echo "";
 
-echo "Running reencrypt-column on JSON column"
+echo "Running reencrypt-column on JSON column username"
+php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.username --force > test.txt
+cat test.txt
+grep -q "$FAKE_JSON_USERNAME" test.txt
+grep -q foobar test.txt
+echo "PASS"
+echo "";echo "";
+echo "Running reencrypt-column on JSON column username - again to verify it was all processed"
+php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.username --force | grep --context 999 'No old entries found'
+echo "PASS"
+echo "";echo "";
+
+echo "Running reencrypt-column on JSON column password to validate multiple fields can be re-encrypted"
 php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.password --force > test.txt
 cat test.txt
 grep -q "$FAKE_JSON_PASSWORD" test.txt
 grep -q jsonpasswordabc123 test.txt
 echo "PASS"
 echo "";echo "";
-echo "Running reencrypt-column on JSON column - again to verify it was all processed"
+echo "Running reencrypt-column on JSON column password to validate multiple fields can be re-encrypted - again to verify it was all processed"
 php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.password --force | grep --context 999 'No old entries found'
 echo "PASS"
 echo "";echo "";
