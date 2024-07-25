@@ -4,6 +4,8 @@ err_report() {
     echo "Error on line $1"
     echo "last test.txt was"
     cat test.txt
+    echo "last app/etc/env.php was"
+    cat app/etc/env.php
 }
 trap 'err_report $LINENO' ERR
 
@@ -12,10 +14,17 @@ CURRENT_TIMESTAMP=$(date +%s)
 ADMIN="adminuser$CURRENT_TIMESTAMP"
 PASSWORD='password123'
 
+echo "Putting magento into production mode, static content has already been generated"
+php bin/magento deploy:mode:set production -s
+
 echo "Stubbing in some test data"
 vendor/bin/n98-magerun2 --version
 vendor/bin/n98-magerun2 admin:user:create --no-interaction --admin-user "$ADMIN" --admin-email "example$CURRENT_TIMESTAMP@example.com" --admin-password $PASSWORD --admin-firstname adminuser --admin-lastname adminuser
 vendor/bin/n98-magerun2 config:store:set zzzzz/zzzzz/zzzz xyz123 --encrypt
+
+echo "Spoofing an encrypted config value into env.php"
+ENCRYPTED_ENV_VALUE=$(vendor/bin/n98-magerun2 dev:encrypt 'Some Base Name')
+bin/magento config:set --lock-env general/store_information/name "$ENCRYPTED_ENV_VALUE"
 
 ADMIN_ID=$(vendor/bin/n98-magerun2 db:query "SELECT user_id FROM admin_user LIMIT 1")
 ADMIN_ID="${ADMIN_ID: -1}"
@@ -26,13 +35,20 @@ echo "Generating 2FA data for admin user $ADMIN in tfa_user_config"
 vendor/bin/n98-magerun2 db:query "delete from tfa_user_config where user_id=$ADMIN_ID";
 vendor/bin/n98-magerun2 db:query "insert into tfa_user_config(user_id, encoded_config) values ($ADMIN_ID, '$TWOFA_JSON_ENCRYPTED');"
 vendor/bin/n98-magerun2 db:query "select user_id, encoded_config from tfa_user_config where user_id=$ADMIN_ID";
+
 FAKE_RP_TOKEN=$(vendor/bin/n98-magerun2 dev:encrypt 'abc123')
 vendor/bin/n98-magerun2 db:query "update admin_user set rp_token='$FAKE_RP_TOKEN' where username='$ADMIN'"
 echo "Generated FAKE_RP_TOKEN=$FAKE_RP_TOKEN and assigned to $ADMIN"
 
+echo "Generating a fake json column"
+FAKE_JSON_PASSWORD=$(vendor/bin/n98-magerun2 dev:encrypt 'jsonpasswordabc123')
+FAKE_JSON_PAYLOAD="{\"user\": \"foobar\", \"password\": \"$FAKE_JSON_PASSWORD\", \"request_url\": \"\"}"
+vendor/bin/n98-magerun2 db:query 'DROP TABLE IF EXISTS fake_json_table; CREATE TABLE fake_json_table (id INT AUTO_INCREMENT PRIMARY KEY, text_column TEXT);'
+vendor/bin/n98-magerun2 db:query "insert into fake_json_table(text_column) values ('$FAKE_JSON_PAYLOAD');"
+vendor/bin/n98-magerun2 db:query "select * from fake_json_table";
+
 echo "Stubbing in a large volume of data to sales_order_payment"
 vendor/bin/n98-magerun2 db:query "delete from sales_order_payment where parent_id=1";
-
 
 echo "";echo "";
 
@@ -84,7 +100,12 @@ fi
 echo "";echo "";
 
 echo "Generating a new encryption key"
+grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php
 php bin/magento gene:encryption-key-manager:generate --force  > test.txt
+if grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php; then
+    echo "FAIL: The old encrypted value in env.php was not updated" && false
+fi
+grep "'name'" app/etc/env.php | grep -q "1:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - start' test.txt
@@ -94,6 +115,7 @@ echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
 php bin/magento gene:encryption-key-manager:generate --force --skip-saved-credit-cards > test.txt
+grep "'name'" app/etc/env.php | grep -q "2:3:"
 grep -q '_reEncryptSystemConfigurationValues - start' test.txt
 grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - skipping' test.txt
@@ -143,6 +165,18 @@ echo "PASS"
 echo "";echo "";
 echo "Running reencrypt-column - again to verify it was all processed"
 php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token --force | grep --context 999 'No old entries found'
+echo "PASS"
+echo "";echo "";
+
+echo "Running reencrypt-column on JSON column"
+php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.password --force > test.txt
+cat test.txt
+grep -q "$FAKE_JSON_PASSWORD" test.txt
+grep -q jsonpasswordabc123 test.txt
+echo "PASS"
+echo "";echo "";
+echo "Running reencrypt-column on JSON column - again to verify it was all processed"
+php bin/magento gene:encryption-key-manager:reencrypt-column fake_json_table id text_column.password --force | grep --context 999 'No old entries found'
 echo "PASS"
 echo "";echo "";
 
@@ -216,6 +250,7 @@ echo "A peek at an example log"
 grep 'gene encryption manager' var/log/system.log | tail -1
 
 echo "A peek at the env.php"
+grep "'name'" app/etc/env.php
 grep -A10 "'crypt' =>" app/etc/env.php
 echo "";echo "";
 echo "DONE"

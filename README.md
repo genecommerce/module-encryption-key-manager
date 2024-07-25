@@ -41,6 +41,13 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 
 ## Fully rotate your old keys
 
+You can take your time to do the following. You are safe from cosmicsting provided you have generated a new encryption key and either
+- have this module installed
+- the [new hotfix](https://experienceleague.adobe.com/en/docs/commerce-knowledge-base/kb/troubleshooting/known-issues-patches-attached/security-update-available-for-adobe-commerce-apsb24-40-revised-to-include-isolated-patch-for-cve-2024-34102?#hotfix)
+- or both
+
+Then you are free to decide if you wish to re-encrypt your old data, and then invalidate your old key.
+
 1. **Review your database** for any tables with encrypted values. Make sure your dump is `--human-readable` (magerun) or `--extended-insert=FALSE` (mysqldump) so that all values are on the same line as the `INSERT INTO` 
 ```bash
 $ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | uniq
@@ -71,9 +78,10 @@ adobe_user_profile
     4. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
     5. `bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
     6. `bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
+6. Flush the cache `php bin/magento cache:flush`
 6. At this point you should have all your data migrated to your new encryption key, to help you verify this you can do the following
-   1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1`
-   2. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
+   1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
+   2. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1`
    3. Monitor your logs for "gene encryption manager" to verify nothing is still using the old key
 7. When you are happy you can **invalidate your old key** `php bin/magento gene:encryption-key-manager:invalidate`
    1. `Magento\Catalog\Model\View\Asset\Image` will continue to use the key at the `0` index in the `crypt/invalidated_key` section
@@ -133,6 +141,7 @@ Done
 
 - Use the `--key` option to manually define the new key to use during re-encryption. If no custom key is provided, a new key will be generated.
 - Use the `--skip-saved-credit-cards` flag to skip re-encrypting the `sales_order_payment` `cc_number_enc` data. This table can be very large, and many stores will have no data saved in this column.
+- This will automatically re-encrypt any `system` values in `app/etc/env.php`
 
 ## bin/magento gene:encryption-key-manager:invalidate
 
@@ -183,7 +192,7 @@ Done
 
 ## bin/magento gene:encryption-key-manager:reencrypt-column
 
-This allows you to target a specific column for re-encryption.
+This allows you to target a specific column for re-encryption. If the column contains JSON, you can target it using dot notation: `column.field`.
 
 This command runs in dry run mode by default, do that as a first pass to see the changes that will be made. When you are happy run with `--force`.
 
