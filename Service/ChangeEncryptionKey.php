@@ -115,6 +115,11 @@ class ChangeEncryptionKey extends MageChanger
                 $updatedCount++;
             }
 
+            $currentMin = $currentMax;
+            if (empty($pairsToUpdate)) {
+                continue;
+            }
+
             $columnsSql = $this->buildColumnsSqlPart(['entity_id', 'cc_number_enc']);
             $valuesSql = $this->buildValuesSqlPart($pairsToUpdate);
             $onDuplicateSql = $this->buildOnDuplicateSqlPart(['cc_number_enc']);
@@ -129,7 +134,6 @@ class ChangeEncryptionKey extends MageChanger
                 $onDuplicateSql
             );
             $this->getConnection()->query($insertSql, $bind);
-            $currentMin = $currentMax;
             $this->writeOutput("running total records updated: $updatedCount", OutputInterface::VERBOSITY_VERBOSE);
         }
 
