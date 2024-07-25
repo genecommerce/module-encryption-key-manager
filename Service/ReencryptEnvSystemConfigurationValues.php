@@ -46,6 +46,9 @@ class ReencryptEnvSystemConfigurationValues
         $this->deploymentConfig->resetData();
         $this->encryptor = $this->encryptorFactory->create();
         $systemConfig = $this->deploymentConfig->get('system');
+        if (!$systemConfig) {
+            return;
+        }
         $systemConfig = $this->iterateSystemConfig($systemConfig);
 
         $encryptSegment = new ConfigData(ConfigFilePool::APP_ENV);
