@@ -17,7 +17,7 @@ $ccNumberEnc = $encryptor->encrypt('cc_number_enc_abc123');
 $rowData = "(1, '$ccNumberEnc'),";
 
 $insertQueryNull = trim('INSERT INTO sales_order_payment (parent_id, cc_number_enc) VALUES ' . str_repeat($rowData, 10000), ", ");
-for ($i = 0; $i < 250; $i++) {
+for ($i = 0; $i < 2500; $i++) {
     $connection->getConnection()->query($insertQueryNull);
 }
 $connection->getConnection()->query('SET FOREIGN_KEY_CHECKS = 1;');
