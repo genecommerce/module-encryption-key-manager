@@ -41,6 +41,13 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 
 ## Fully rotate your old keys
 
+You can take your time to do the following. You are safe from cosmicsting provided you have generated a new encryption key and either
+- have this module installed
+- the [new hotfix](https://experienceleague.adobe.com/en/docs/commerce-knowledge-base/kb/troubleshooting/known-issues-patches-attached/security-update-available-for-adobe-commerce-apsb24-40-revised-to-include-isolated-patch-for-cve-2024-34102?#hotfix)
+- or both
+
+Then you are free to decide if you wish to re-encrypt your old data, and then invalidate your old key.
+
 1. **Review your database** for any tables with encrypted values. Make sure your dump is `--human-readable` (magerun) or `--extended-insert=FALSE` (mysqldump) so that all values are on the same line as the `INSERT INTO` 
 ```bash
 $ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | uniq
