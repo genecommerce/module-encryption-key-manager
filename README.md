@@ -237,3 +237,17 @@ Dry run mode, no changes have been made
 ########################################################################################################################
 Done
 ```
+
+# Caveats
+## I ignored the docs and edited the env.php manually
+There are two possibilities here:
+### You appended a new key on a new line
+Please ensure you [flush your redis cache](https://redis.io/docs/latest/commands/flushall/)
+> Note: you will not be able to run `bin/magento cache:clean` like normal
+
+Now you are right to continue with the re-encryption work as stated above.
+
+### You replaced your encryption key.
+You will need to:
+1. Recover your old encryption key
+1. Append your the new encryption key and repeat the steps above
