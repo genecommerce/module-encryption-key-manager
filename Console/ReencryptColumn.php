@@ -138,6 +138,7 @@ class ReencryptColumn extends Command
                 return Cli::RETURN_SUCCESS;
             }
             $connection->beginTransaction();
+            $noResults = true;
             foreach ($result as $row) {
                 $output->writeln(str_pad('', 120, '#'));
                 $value = $row[$column];
@@ -150,6 +151,7 @@ class ReencryptColumn extends Command
                         continue;
                     }
                 }
+                $noResults = false;
                 $output->writeln("$identifier: {$row[$identifier]}");
                 $output->writeln("ciphertext_old: " . $value);
                 $valueDecrypted = $this->encryptor->decrypt($value);
@@ -172,6 +174,10 @@ class ReencryptColumn extends Command
                     $output->writeln('Dry run mode, no changes have been made');
                 }
                 $output->writeln(str_pad('', 120, '#'));
+            }
+
+            if ($noResults) {
+                $output->writeln('No old entries found');
             }
 
             $connection->commit();
