@@ -130,8 +130,7 @@ class ReencryptColumn extends Command
                 $select = $select->where("($field LIKE '_:_:____%' OR $field LIKE '__:_:____%')")
                     ->where("$field NOT LIKE ?", "$latestKeyNumber:_:__%");
             } else {
-                $select = $select->where("($field LIKE '{%_:_:____%}' OR $field LIKE '{%__:_:____%}')")
-                    ->where("$field NOT LIKE ?", "{%$latestKeyNumber:_:__%}");
+                $select = $select->where("($field LIKE '{%_:_:____%}' OR $field LIKE '{%__:_:____%}')");
             }
             $result = $connection->fetchAll($select);
             if (empty($result)) {
@@ -139,6 +138,7 @@ class ReencryptColumn extends Command
                 return Cli::RETURN_SUCCESS;
             }
             $connection->beginTransaction();
+            $noResults = true;
             foreach ($result as $row) {
                 $output->writeln(str_pad('', 120, '#'));
                 $value = $row[$column];
@@ -146,10 +146,12 @@ class ReencryptColumn extends Command
                 if ($jsonField !== null) {
                     $fieldData = $this->jsonSerializer->unserialize($value);
                     $value = $fieldData[$jsonField] ?? '';
+                    // Prevent re-processing fields & processing empty fields
+                    if (strpos($value, "$latestKeyNumber:") === 0 || $value === '') {
+                        continue;
+                    }
                 }
-                if ($value === '') {
-                    continue;
-                }
+                $noResults = false;
                 $output->writeln("$identifier: {$row[$identifier]}");
                 $output->writeln("ciphertext_old: " . $value);
                 $valueDecrypted = $this->encryptor->decrypt($value);
@@ -172,6 +174,10 @@ class ReencryptColumn extends Command
                     $output->writeln('Dry run mode, no changes have been made');
                 }
                 $output->writeln(str_pad('', 120, '#'));
+            }
+
+            if ($noResults) {
+                $output->writeln('No old entries found');
             }
 
             $connection->commit();
