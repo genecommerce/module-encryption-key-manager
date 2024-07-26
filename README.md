@@ -257,3 +257,9 @@ Now you are right to continue with the re-encryption work as stated above.
 You will need to:
 1. Recover your old encryption key
 1. Append your the new encryption key and repeat the steps above
+
+## Unable to retrieve deployment version of static files from the file system
+Redeploy your static assets (this is best to do before disabling maintenance mode)
+```
+bin/magento setup:static-content:deploy
+```
