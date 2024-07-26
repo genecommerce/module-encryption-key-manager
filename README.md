@@ -35,6 +35,7 @@ This should be every merchant's **priority!** Install this module and generate a
 ```
 php bin/magento maintenance:enable
 php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY] [--skip-saved-credit-cards]
+php bin/magento cache:flush
 php bin/magento maintenance:disable
 ```
 > Note: this will cause downtime, so please be prepared for that, and make this change outside of your peak traffic window
