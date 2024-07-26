@@ -20,8 +20,18 @@ CURRENT_TIMESTAMP=$(date +%s)
 ADMIN="adminuser$CURRENT_TIMESTAMP"
 PASSWORD='password123'
 
-echo "Putting magento into production mode, static content has already been generated"
+echo "Putting magento into production mode, di:compile has already been generated"
 php bin/magento deploy:mode:set production -s
+php -d memory_limit=-1 bin/magento setup:static-content:deploy en_US --no-interaction -f --no-ansi --area=frontend
+
+echo "Verifying frontend is functional"
+php bin/magento cache:disable full_page
+curl "$URL" -vvv > test.txt 2>&1
+grep -q '200 OK' test.txt
+grep --max-count=1  'static/version' test.txt
+grep -q 'All rights reserved.' test.txt
+echo "PASS"
+echo "";echo "";
 
 echo "Stubbing in some test data"
 vendor/bin/n98-magerun2 --version
@@ -129,6 +139,15 @@ fi
 if grep -q '_reEncryptCreditCardNumbers - end' test.txt; then
     echo "FAIL: We should never end on _reEncryptCreditCardNumbers with --skip-saved-credit-cards" && false
 fi
+echo "PASS"
+echo "";echo "";
+
+echo "Verifying frontend is still functional after key generation"
+php bin/magento cache:flush
+curl "$URL?test1" -vvv > test.txt 2>&1
+grep -q '200 OK' test.txt
+grep --max-count=1  'static/version' test.txt
+grep -q 'All rights reserved.' test.txt
 echo "PASS"
 echo "";echo "";
 
@@ -260,6 +279,15 @@ else
     cat var/log/system.log
     echo "FAIL: We should have a log hit when trying to decrypt using an old key" && false
 fi
+echo "";echo "";
+
+echo "Verifying frontend is still functional after all the tests"
+php bin/magento cache:flush
+curl "$URL?test2" -vvv > test.txt 2>&1
+grep -q '200 OK' test.txt
+grep --max-count=1  'static/version' test.txt
+grep -q 'All rights reserved.' test.txt
+echo "PASS"
 echo "";echo "";
 
 echo "A peek at an example log"
