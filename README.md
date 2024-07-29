@@ -72,12 +72,12 @@ adobe_user_profile
 4. **Fix 2FA data** `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
 5. Fix up all additional identified columns like so, be careful to verify each table and column as this may not be an exhaustive list (also be aware of `entity_id`, `row_id` and `id`)
-    1. `bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token`
-    2. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
-    3. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_token entity_id secret`
-    4. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
-    5. `bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
-    6. `bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
+    1. `php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token`
+    2. `php bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
+    3. `php bin/magento gene:encryption-key-manager:reencrypt-column oauth_token entity_id secret`
+    4. `php bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
+    5. `php bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
+    6. `php bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
 6. Flush the cache `php bin/magento cache:flush`
 6. At this point you should have all your data migrated to your new encryption key, to help you verify this you can do the following
    1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
@@ -120,6 +120,8 @@ It is recommended to enable this logging after you have handled the re-encryptio
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
 ```
+
+The log file is located in <mage_dir>/var/log/encryption_key_manager.log
 
 ## bin/magento gene:encryption-key-manager:generate
 

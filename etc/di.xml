@@ -41,4 +41,14 @@
         </arguments>
     </type>
 
+    <!-- Logger -->
+    <type name="Gene\EncryptionKeyManager\Logger\CustomLogger">
+        <arguments>
+            <argument name="name" xsi:type="string">encryption_key_manager</argument>
+            <argument name="handlers" xsi:type="array">
+                <item name="debug" xsi:type="object">Gene\EncryptionKeyManager\Logger\CustomHandler</item>
+            </argument>
+        </arguments>
+    </type>
+
 </config>
