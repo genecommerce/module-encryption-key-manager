@@ -51,17 +51,15 @@ class ReEncryptCloudEnvKeysCommand
         $config = [];
 
         foreach ($environmentVariables as $template => $value) {
-            if (!$this->placeholder->isApplicable($template) || !$this->helper->isEncryptedValue($value)) {
+            if (!$this->placeholder->isApplicable($template)
+                || !$this->helper->isEncryptedValue($value)
+                || $this->helper->isAlreadyUpdated($value)) {
                 continue;
             }
 
             $decryptedValue = $this->encryptor->decrypt($value);
             $newValue = $this->encryptor->encrypt($decryptedValue);
-            $item = compact('value', 'newValue', 'decryptedValue');
-            if ($this->helper->isAlreadyUpdated($item['value'])) {
-                continue;
-            }
-            $config[$template] = $item;
+            $config[$template] = compact('value', 'newValue', 'decryptedValue');
         }
 
         return $config;

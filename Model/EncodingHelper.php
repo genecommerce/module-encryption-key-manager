@@ -47,7 +47,7 @@ class EncodingHelper
     }
 
     /**
-     * The value can be encrypted
+     * Returns whether the value is already encrypted
      *
      * @param string $encryptedValue
      * @return bool
