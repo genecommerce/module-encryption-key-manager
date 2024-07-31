@@ -84,6 +84,10 @@ class ReencryptTfaData extends Command
              */
             $tableName = $this->resourceConnection->getTableName($table);
             $connection = $this->resourceConnection->getConnection();
+            if (!$connection->isTableExists($tableName)) {
+                $output->writeln("<info>The table {$tableName} doesn't exist</info>");
+                return Cli::RETURN_SUCCESS;
+            }
             $field = $connection->quoteIdentifier(sprintf('%s.%s', $tableName, $column));
 
             $select = $connection->select()
