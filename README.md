@@ -237,3 +237,31 @@ Dry run mode, no changes have been made
 ########################################################################################################################
 Done
 ```
+
+## bin/magento gene:encryption-key-manager:get-cloud-keys
+
+This command to get re-encrypted cloud environments variables. 
+This one DOESN'T update existing values, it just returns new ones in console. 
+The Dev has to update them manually in cloud console.
+
+```bash
+# No keys example
+$ bin/magento gene:encryption-key-manager:get-cloud-keys
+There is no old encrypted environment variables found
+
+# There is some encoded
+$ bin/magento gene:encryption-key-manager:get-cloud-keys --show-decrypted
+There is no old encrypted environment variables found
+The CLI command doesn\'t rewrite values. You have to update them manually in cloud console!
+Rows count: 4
+##################################################################
+Name: CONFIG__DEFAULT__SOME_KEY
+Dectypted value: dectypted_value
+Old Encrypted Value: 0:3:AAA1
+New Encrypted Value: 1:3:BBB1
+##################################################################
+Name: CONFIG__DEFAULT__SOME_KEY_2
+Dectypted value: dectypted_value_2
+Old Encrypted Value: 0:3:AAA2
+New Encrypted Value: 1:3:BBB2
+```
