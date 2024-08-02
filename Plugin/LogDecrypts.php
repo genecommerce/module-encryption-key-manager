@@ -5,6 +5,7 @@ namespace Gene\EncryptionKeyManager\Plugin;
 use Psr\Log\LoggerInterface;
 use Magento\Framework\Encryption\Encryptor;
 use Magento\Framework\App\DeploymentConfig;
+use Gene\EncryptionKeyManager\Model\EncodingHelper;
 
 class LogDecrypts
 {
@@ -27,7 +28,8 @@ class LogDecrypts
     public function __construct(
         Encryptor $encryptor,
         DeploymentConfig $deploymentConfig,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly EncodingHelper $encodingHelper
     ) {
         $this->keyCount = count(explode(PHP_EOL, $encryptor->exportKeys())) - 1;
 
@@ -62,6 +64,11 @@ class LogDecrypts
             }
             if ($this->onlyLogOldKeyDecryptions && str_starts_with($data, $this->keyCount . ':')) {
                 // We are decrypting a value identified by the current maximum key, no need to log
+                return $result;
+            }
+
+            // don't logging values don't like as an encrypted value
+            if (!$this->encodingHelper->isEncryptedValue()) {
                 return $result;
             }
 
