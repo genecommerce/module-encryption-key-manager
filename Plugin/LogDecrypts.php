@@ -68,7 +68,7 @@ class LogDecrypts
             }
 
             // don't logging values don't like as an encrypted value
-            if (!$this->encodingHelper->isEncryptedValue()) {
+            if (!$this->encodingHelper->isEncryptedValue($data)) {
                 return $result;
             }
 
