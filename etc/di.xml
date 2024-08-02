@@ -42,12 +42,22 @@
     </type>
 
     <!-- Logger -->
-    <type name="Gene\EncryptionKeyManager\Logger\CustomLogger">
+    <virtualType name="GeneEncryptionHandler"
+                 type="Magento\Framework\Logger\Handler\Base">
         <arguments>
-            <argument name="name" xsi:type="string">encryption_key_manager</argument>
+            <argument name="fileName" xsi:type="string">/var/log/gene_encryption_key.log</argument>
+        </arguments>
+    </virtualType>
+    <virtualType name="GeneEncryptionLogger" type="Magento\Framework\Logger\Monolog">
+        <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="debug" xsi:type="object">Gene\EncryptionKeyManager\Logger\CustomHandler</item>
+                <item name="debug" xsi:type="object">GeneEncryptionHandler</item>
             </argument>
+        </arguments>
+    </virtualType>
+    <type name="Gene\EncryptionKeyManager\Plugin\LogDecrypts">
+        <arguments>
+            <argument name="logger" xsi:type="object">GeneEncryptionLogger</argument>
         </arguments>
     </type>
 

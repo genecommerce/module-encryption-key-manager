@@ -2,7 +2,7 @@
 declare(strict_types=1);
 namespace Gene\EncryptionKeyManager\Plugin;
 
-use Gene\EncryptionKeyManager\Logger\CustomLogger;
+use Psr\Log\LoggerInterface;
 use Magento\Framework\Encryption\Encryptor;
 use Magento\Framework\App\DeploymentConfig;
 
@@ -20,14 +20,14 @@ class LogDecrypts
     /**
      * @param Encryptor $encryptor
      * @param DeploymentConfig $deploymentConfig
-     * @param CustomLogger $logger
+     * @param LoggerInterface $logger
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\RuntimeException
      */
     public function __construct(
         Encryptor $encryptor,
         DeploymentConfig $deploymentConfig,
-        private readonly CustomLogger $logger
+        private readonly LoggerInterface $logger
     ) {
         $this->keyCount = count(explode(PHP_EOL, $encryptor->exportKeys())) - 1;
 
