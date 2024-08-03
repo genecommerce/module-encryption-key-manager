@@ -121,7 +121,7 @@ php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_d
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
 ```
 
-The log file is located in <mage_dir>/var/log/encryption_key_manager.log
+The log file is located in <mage_dir>/var/log/gene_encryption_key.log
 
 ## bin/magento gene:encryption-key-manager:generate
 

@@ -229,10 +229,10 @@ php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_d
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 0
 php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
 rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
-touch var/log/encryption_key_manager.log
+touch var/log/gene_encryption_key.log
 ls -l var/log
-if grep -q 'gene encryption manager' var/log/encryption_key_manager.log; then
-    cat var/log/encryption_key_manager.log
+if grep -q 'gene encryption manager' var/log/gene_encryption_key.log; then
+    cat var/log/gene_encryption_key.log
     echo "FAIL: No logs should be produced without enabling the logger" && false
 else
     echo "PASS: No logs were produced"
@@ -244,12 +244,12 @@ php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_d
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 0
 php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
 rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
-touch var/log/encryption_key_manager.log
+touch var/log/gene_encryption_key.log
 ls -l var/log
-if grep 'gene encryption manager' var/log/encryption_key_manager.log | grep -q 'Magento\\'; then
+if grep 'gene encryption manager' var/log/gene_encryption_key.log | grep -q 'Magento\\'; then
     echo "PASS: A log was produced"
 else
-    cat var/log/encryption_key_manager.log
+    cat var/log/gene_encryption_key.log
     echo "FAIL: A log should be produced" && false
 fi
 echo "";echo "";
@@ -258,10 +258,10 @@ echo "Testing that gene_encryption_manager_only_log_old_decrypts=1 stops a log b
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
 php bin/magento cache:flush; php bin/magento | head -1; # clear and warm caches
 rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
-touch var/log/encryption_key_manager.log
+touch var/log/gene_encryption_key.log
 ls -l var/log
-if grep -q 'gene encryption manager' var/log/encryption_key_manager.log; then
-    cat var/log/encryption_key_manager.log
+if grep -q 'gene encryption manager' var/log/gene_encryption_key.log; then
+    cat var/log/gene_encryption_key.log
     echo "FAIL: No logs should be produced when the keys are up to date" && false
 else
     echo "PASS: No logs were produced when the keys were up to date"
@@ -271,15 +271,24 @@ echo "";echo "";
 echo "Testing that gene_encryption_manager_only_log_old_decrypts=1 writes when an old key is used"
 rm -f var/log/*.log && php bin/magento | head -1 # trigger a decrypt of the stored system config
 vendor/bin/n98-magerun2 dev:decrypt '0:3:qwertyuiopasdfghjklzxcvbnm' # we are on a higher key than 0 now
-touch var/log/encryption_key_manager.log
+touch var/log/gene_encryption_key.log
 ls -l var/log
-if grep 'gene encryption manager' var/log/encryption_key_manager.log | grep -q 'DecryptCommand'; then
+if grep 'gene encryption manager' var/log/gene_encryption_key.log | grep -q 'DecryptCommand'; then
     echo "PASS: We have a log hit when trying to decrypt with the old key"
 else
-    cat var/log/encryption_key_manager.log
+    cat var/log/gene_encryption_key.log
     echo "FAIL: We should have a log hit when trying to decrypt using an old key" && false
 fi
 echo "";echo "";
+
+echo "Verifying that the log is not present in system.log"
+touch var/log/system.log
+if grep 'gene encryption manager' var/log/system.log | grep -q 'DecryptCommand'; then
+    cat var/log/system.log
+    echo "FAIL: We should have a log hit when trying to decrypt using an old key" && false
+else
+    echo "PASS: the log is not present in system.log" && false
+fi
 
 echo "Verifying frontend is still functional after all the tests"
 php bin/magento cache:flush
@@ -291,7 +300,7 @@ echo "PASS"
 echo "";echo "";
 
 echo "A peek at an example log"
-grep 'gene encryption manager' var/log/encryption_key_manager.log | tail -1
+grep 'gene encryption manager' var/log/gene_encryption_key.log | tail -1
 
 echo "A peek at the env.php"
 grep "'name'" app/etc/env.php
