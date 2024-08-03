@@ -247,21 +247,20 @@ Done
 ```
 
 # Caveats
-## I ignored the docs and edited the env.php manually
-There are two possibilities here:
-### You appended a new key on a new line
+
+## report.WARNING: Unable to unserialize value
+
+This is not common, it has been reported by people using this module and people using the admin controller to rotate their encryption keys. Flushing redis cache resolves the issue.
+
 Please ensure you [flush your redis cache](https://redis.io/docs/latest/commands/flushall/)
-> Note: you will not be able to run `bin/magento cache:clean` like normal
 
 Now you are right to continue with the re-encryption work as stated above.
 
-### You replaced your encryption key.
+## You replaced your encryption key
 You will need to:
 1. Recover your old encryption key
 1. Append your the new encryption key and repeat the steps above
 
-## Unable to retrieve deployment version of static files from the file system
-Redeploy your static assets (this is best to do before disabling maintenance mode)
-```
-bin/magento setup:static-content:deploy
-```
+## Other issues
+
+Search https://github.com/genecommerce/module-encryption-key-manager/issues for other issues.
