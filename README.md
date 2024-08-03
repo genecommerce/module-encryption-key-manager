@@ -32,7 +32,13 @@ This is a rough list of steps that should be followed to prevent attacks with Co
 
 This should be every merchant's **priority!** Install this module and generate a new key with: 
 
-`php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY] [--skip-saved-credit-cards]`
+```
+php bin/magento maintenance:enable
+php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY] [--skip-saved-credit-cards]
+php bin/magento cache:flush
+php bin/magento maintenance:disable
+```
+> Note: this will cause downtime, so please be prepared for that, and make this change outside of your peak traffic window
 
 This will force the JWT factory to use the newly generated key. Other areas of the application may continue to use the old keys. This step is the absolute priority and will help prevent attacks with CosmicSting.
 
@@ -238,4 +244,24 @@ ciphertext_new: 1:3:Tw/5ik2meBqzL8oodrudxmksrOekA/DbZE5+KgBAygFxp6Zx/A7vbMyHt4+N
 Dry run mode, no changes have been made
 ########################################################################################################################
 Done
+```
+
+# Caveats
+## I ignored the docs and edited the env.php manually
+There are two possibilities here:
+### You appended a new key on a new line
+Please ensure you [flush your redis cache](https://redis.io/docs/latest/commands/flushall/)
+> Note: you will not be able to run `bin/magento cache:clean` like normal
+
+Now you are right to continue with the re-encryption work as stated above.
+
+### You replaced your encryption key.
+You will need to:
+1. Recover your old encryption key
+1. Append your the new encryption key and repeat the steps above
+
+## Unable to retrieve deployment version of static files from the file system
+Redeploy your static assets (this is best to do before disabling maintenance mode)
+```
+bin/magento setup:static-content:deploy
 ```
