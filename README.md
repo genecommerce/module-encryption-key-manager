@@ -32,13 +32,7 @@ This is a rough list of steps that should be followed to prevent attacks with Co
 
 This should be every merchant's **priority!** Install this module and generate a new key with: 
 
-```
-php bin/magento maintenance:enable
-php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY] [--skip-saved-credit-cards]
-php bin/magento cache:flush
-php bin/magento maintenance:disable
-```
-> Note: this will cause downtime, so please be prepared for that, and make this change outside of your peak traffic window
+`php bin/magento gene:encryption-key-manager:generate [--key=MY_32_CHAR_CRYPT_KEY] [--skip-saved-credit-cards]`
 
 This will force the JWT factory to use the newly generated key. Other areas of the application may continue to use the old keys. This step is the absolute priority and will help prevent attacks with CosmicSting.
 
