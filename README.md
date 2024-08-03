@@ -278,10 +278,10 @@ Please ensure you [flush your redis cache](https://redis.io/docs/latest/commands
 
 Now you are right to continue with the re-encryption work as stated above.
 
-## You replaced your encryption key
+## You manually replaced your encryption key
 You will need to:
 1. Recover your old encryption key
-1. Append your the new encryption key and repeat the steps above
+1. Prepend your old key to the new key, separated by `\n` and repeat the steps above
 
 ## Other issues
 
