@@ -285,9 +285,9 @@ echo "Verifying that the log is not present in system.log"
 touch var/log/system.log
 if grep 'gene encryption manager' var/log/system.log | grep -q 'DecryptCommand'; then
     cat var/log/system.log
-    echo "FAIL: We should have a log hit when trying to decrypt using an old key" && false
+    echo "FAIL: The log is also present in system.log" && false
 else
-    echo "PASS: the log is not present in system.log" && false
+    echo "PASS: The log is not present in system.log"
 fi
 
 echo "Verifying frontend is still functional after all the tests"
