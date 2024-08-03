@@ -53,7 +53,7 @@
     <virtualType name="GeneEncryptionLogger" type="Magento\Framework\Logger\Monolog">
         <arguments>
             <argument name="handlers" xsi:type="array">
-                <item name="debug" xsi:type="object">GeneEncryptionHandler</item>
+                <item name="system" xsi:type="object">GeneEncryptionHandler</item>
             </argument>
         </arguments>
     </virtualType>
