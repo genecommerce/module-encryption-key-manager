@@ -48,7 +48,7 @@ You can take your time to do the following. You are safe from cosmicsting provid
 
 Then you are free to decide if you wish to re-encrypt your old data, and then invalidate your old key.
 
-1. **Review your database** for any tables with encrypted values. Make sure your dump is `--human-readable` (magerun) or `--extended-insert=FALSE` (mysqldump) so that all values are on the same line as the `INSERT INTO` 
+1. **Review your database** (make sure zgrep is on version 1.12) for any tables with encrypted values. Make sure your dump is `--human-readable` (magerun) or `--extended-insert=FALSE` (mysqldump) so that all values are on the same line as the `INSERT INTO` 
 ```bash
 $ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | uniq
 admin_user
@@ -60,6 +60,12 @@ tfa_user_config
 admin_adobe_ims_webapi
 adobe_user_profile
 ```
+
+Or to get a overview of all found tables with amount of records:
+```bash
+zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | sort | uniq -c
+```
+
 2. Review your `env.php`, if you store any encrypted values there they will need to be reissued by the provider as they may have been leaked.
 2. **Review functions** using `->hash(` from the encryptor class. Changing the keys will result in a different hash.
 3. If you have **custom logic** to handle that, it will be something you need to work that out manually.
