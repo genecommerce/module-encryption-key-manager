@@ -41,10 +41,7 @@ This will force the JWT factory to use the newly generated key. Other areas of t
 
 ## Fully rotate your old keys
 
-You can take your time to do the following. You are safe from cosmicsting provided you have generated a new encryption key and either
-- have this module installed
-- the [new hotfix](https://experienceleague.adobe.com/en/docs/commerce-knowledge-base/kb/troubleshooting/known-issues-patches-attached/security-update-available-for-adobe-commerce-apsb24-40-revised-to-include-isolated-patch-for-cve-2024-34102?#hotfix)
-- or both
+You can take your time to do the following. You are safe from cosmicsting provided you have installed the [isolated patches](https://experienceleague.adobe.com/en/docs/commerce-knowledge-base/kb/troubleshooting/known-issues-patches-attached/security-update-available-for-adobe-commerce-apsb24-40-revised-to-include-isolated-patch-for-cve-2024-34102#isolated-patch-details) and used this module to generate a new encryption key.
 
 Then you are free to decide if you wish to re-encrypt your old data, and then invalidate your old key.
 
