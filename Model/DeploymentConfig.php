@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Gene\EncryptionKeyManager\Model;
 
 use Magento\Framework\App\DeploymentConfig as MageDeploymentConfig;
@@ -9,11 +10,11 @@ use Magento\Framework\Exception\RuntimeException;
 class DeploymentConfig extends MageDeploymentConfig
 {
     /**
-     * Gets data from flattened data
+     * Gets data from flattened data.
      *
-     * Modified so that we only return the last entry for "crypt/key" so that the JWT process only takes the recent one
+     * Modified so that we only return the last entry for "crypt/key" so that the JWT process only takes the recent one.
      *
-     * @param string $key
+     * @param string|null $key
      * @param mixed $defaultValue
      * @return mixed|null
      * @throws FileSystemException
@@ -25,12 +26,14 @@ class DeploymentConfig extends MageDeploymentConfig
 
         if ($key === 'crypt/key') {
             /**
-             * Only allow the last key to be used for JWT
+             * Only allow the last key to be used for JWT.
              *
              * @see \Magento\JwtUserToken\Model\SecretBasedJwksFactory::__construct
              */
             $keys = preg_split('/\s+/s', trim((string)$data));
-            $data = end($keys);
+            if ($keys !== false) {
+                $data = end($keys);
+            }
         }
 
         return $data;

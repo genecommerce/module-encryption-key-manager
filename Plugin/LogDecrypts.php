@@ -18,19 +18,28 @@ class LogDecrypts
     /** @var bool  */
     private $onlyLogOldKeyDecryptions = false;
 
+    /** @var LoggerInterface */
+    private $logger;
+
+    /** @var EncodingHelper */
+    private $encodingHelper;
+
     /**
      * @param Encryptor $encryptor
      * @param DeploymentConfig $deploymentConfig
      * @param LoggerInterface $logger
+     * @param EncodingHelper $encodingHelper
      * @throws \Magento\Framework\Exception\FileSystemException
      * @throws \Magento\Framework\Exception\RuntimeException
      */
     public function __construct(
         Encryptor $encryptor,
         DeploymentConfig $deploymentConfig,
-        private readonly LoggerInterface $logger,
-        private readonly EncodingHelper $encodingHelper
+        LoggerInterface $logger,
+        EncodingHelper $encodingHelper
     ) {
+        $this->logger = $logger;
+        $this->encodingHelper = $encodingHelper;
         $this->keyCount = count(explode(PHP_EOL, $encryptor->exportKeys())) - 1;
 
         // These need to come from deployment config because it is triggered so early in the request flow
@@ -62,7 +71,7 @@ class LogDecrypts
                 // Not a string matching '0:0:X' or longer
                 return $result;
             }
-            if ($this->onlyLogOldKeyDecryptions && str_starts_with($data, $this->keyCount . ':')) {
+            if ($this->onlyLogOldKeyDecryptions && strpos($data, $this->keyCount . ':') === 0) {
                 // We are decrypting a value identified by the current maximum key, no need to log
                 return $result;
             }

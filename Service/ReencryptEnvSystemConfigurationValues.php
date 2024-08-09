@@ -16,8 +16,20 @@ use Magento\Framework\Exception\RuntimeException;
 
 class ReencryptEnvSystemConfigurationValues
 {
-    /** @var EncryptorInterface|null  */
+    /** @var EncryptorInterface|null */
     private $encryptor = null;
+
+    /** @var DeploymentConfig */
+    private $deploymentConfig;
+
+    /** @var Writer */
+    private $writer;
+
+    /** @var EncryptorInterfaceFactory */
+    private $encryptorFactory;
+
+    /** @var Hash */
+    private $hash;
 
     /**
      * @param DeploymentConfig $deploymentConfig
@@ -26,11 +38,15 @@ class ReencryptEnvSystemConfigurationValues
      * @param Hash $hash
      */
     public function __construct(
-        private readonly DeploymentConfig $deploymentConfig,
-        private readonly Writer $writer,
-        private readonly EncryptorInterfaceFactory $encryptorFactory,
-        private readonly Hash $hash
+        DeploymentConfig $deploymentConfig,
+        Writer $writer,
+        EncryptorInterfaceFactory $encryptorFactory,
+        Hash $hash
     ) {
+        $this->deploymentConfig = $deploymentConfig;
+        $this->writer = $writer;
+        $this->encryptorFactory = $encryptorFactory;
+        $this->hash = $hash;
     }
 
     /**

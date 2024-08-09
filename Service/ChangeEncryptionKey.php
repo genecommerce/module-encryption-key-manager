@@ -8,12 +8,14 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ChangeEncryptionKey extends MageChanger
 {
     /** @var OutputInterface|null */
-    private $output;
+    private $output = null;
 
-    /** @var bool  */
+    /** @var bool */
     private $skipSavedCreditCards = false;
 
     /**
+     * Set the OutputInterface for logging output.
+     *
      * @param OutputInterface $output
      * @return void
      */
@@ -23,6 +25,8 @@ class ChangeEncryptionKey extends MageChanger
     }
 
     /**
+     * Set whether to skip re-encryption of saved credit cards.
+     *
      * @param bool $skipSavedCreditCards
      * @return void
      */
@@ -32,6 +36,8 @@ class ChangeEncryptionKey extends MageChanger
     }
 
     /**
+     * Write a message to the output if it's set.
+     *
      * @param string $text
      * @return void
      */
@@ -43,7 +49,7 @@ class ChangeEncryptionKey extends MageChanger
     }
 
     /**
-     * Gather all encrypted system config values and re-encrypt them
+     * Gather all encrypted system config values and re-encrypt them.
      *
      * @return void
      */
@@ -55,9 +61,9 @@ class ChangeEncryptionKey extends MageChanger
     }
 
     /**
-     * Gather saved credit card numbers from sales order payments and re-encrypt them
+     * Gather saved credit card numbers from sales order payments and re-encrypt them.
      *
-     * The parent function does not handle null values, so this version filters them out as well as adding CLI output
+     * The parent function does not handle null values, so this version filters them out as well as adding CLI output.
      *
      * @return void
      */
@@ -72,13 +78,12 @@ class ChangeEncryptionKey extends MageChanger
         $select = $this->getConnection()->select()->from($table, ['entity_id', 'cc_number_enc']);
 
         $attributeValues = $this->getConnection()->fetchPairs($select);
-        // save new values
+
+        // Save new values
         foreach ($attributeValues as $valueId => $value) {
-            // GENE CHANGE START
             if (!$value) {
                 continue;
             }
-            // GENE CHANGE END
             $this->getConnection()->update(
                 $table,
                 ['cc_number_enc' => $this->encryptor->encrypt($this->encryptor->decrypt($value))],

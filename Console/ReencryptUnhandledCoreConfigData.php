@@ -16,6 +16,11 @@ class ReencryptUnhandledCoreConfigData extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
 
+    private $deploymentConfig;
+    private $resourceConnection;
+    private $encryptor;
+    private $cache;
+
     /**
      * @param DeploymentConfig $deploymentConfig
      * @param ResourceConnection $resourceConnection
@@ -23,11 +28,15 @@ class ReencryptUnhandledCoreConfigData extends Command
      * @param CacheInterface $cache
      */
     public function __construct(
-        private readonly DeploymentConfig $deploymentConfig,
-        private readonly ResourceConnection $resourceConnection,
-        private readonly EncryptorInterface $encryptor,
-        private readonly CacheInterface $cache
+        DeploymentConfig $deploymentConfig,
+        ResourceConnection $resourceConnection,
+        EncryptorInterface $encryptor,
+        CacheInterface $cache
     ) {
+        $this->deploymentConfig = $deploymentConfig;
+        $this->resourceConnection = $resourceConnection;
+        $this->encryptor = $encryptor;
+        $this->cache = $cache;
         parent::__construct();
     }
 

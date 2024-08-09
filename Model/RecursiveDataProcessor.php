@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Gene\EncryptionKeyManager\Model;
 
@@ -6,18 +8,29 @@ use Magento\Framework\Encryption\EncryptorInterface;
 
 class RecursiveDataProcessor
 {
-    private int $failures = 0;
+    /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
 
     /**
+     * @var int
+     */
+    private $failures = 0;
+
+    /**
+     * RecursiveDataProcessor constructor.
+     *
      * @param EncryptorInterface $encryptor
      */
-    public function __construct(
-        private readonly EncryptorInterface $encryptor,
-    ) {
+    public function __construct(EncryptorInterface $encryptor)
+    {
+        $this->encryptor = $encryptor;
     }
 
     /**
-     * Recursively process nested encrypted values
+     * Recursively process nested encrypted values.
+     *
      * @param mixed $layer
      * @return mixed
      */

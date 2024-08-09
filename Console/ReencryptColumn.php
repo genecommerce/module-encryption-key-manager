@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Gene\EncryptionKeyManager\Console;
 
 use Magento\Framework\App\ResourceConnection;
@@ -21,21 +22,31 @@ class ReencryptColumn extends Command
     public const INPUT_KEY_IDENTIFIER = 'identifier';
     public const INPUT_KEY_COLUMN = 'column';
 
+    private $deploymentConfig;
+    private $resourceConnection;
+    private $jsonSerializer;
+    private $encryptor;
+    private $cache;
+
     /**
-     * @param Magento\Framework\App\DeploymentConfig $deploymentConfig
-     * @param Magento\Framework\App\ResourceConnection $resourceConnection
-     * @param Magento\Framework\Serialize\Serializer\Json $jsonSerializer
-     * @param Magento\Framework\Encryption\EncryptorInterface $encryptor
-     * @param Magento\Framework\App\CacheInterface $cache
-     * @return void
+     * @param DeploymentConfig $deploymentConfig
+     * @param ResourceConnection $resourceConnection
+     * @param JsonSerializer $jsonSerializer
+     * @param EncryptorInterface $encryptor
+     * @param CacheInterface $cache
      */
     public function __construct(
-        private readonly DeploymentConfig $deploymentConfig,
-        private readonly ResourceConnection $resourceConnection,
-        private readonly JsonSerializer $jsonSerializer,
-        private readonly EncryptorInterface $encryptor,
-        private readonly CacheInterface $cache
+        DeploymentConfig $deploymentConfig,
+        ResourceConnection $resourceConnection,
+        JsonSerializer $jsonSerializer,
+        EncryptorInterface $encryptor,
+        CacheInterface $cache
     ) {
+        $this->deploymentConfig = $deploymentConfig;
+        $this->resourceConnection = $resourceConnection;
+        $this->jsonSerializer = $jsonSerializer;
+        $this->encryptor = $encryptor;
+        $this->cache = $cache;
         parent::__construct();
     }
 
@@ -72,7 +83,7 @@ class ReencryptColumn extends Command
         ];
 
         $this->setName('gene:encryption-key-manager:reencrypt-column');
-        $this->setDescription('Re-encrypt a columns data with the latest key');
+        $this->setDescription('Re-encrypt a column\'s data with the latest key');
         $this->setDefinition($options);
 
         parent::configure();
@@ -107,7 +118,7 @@ class ReencryptColumn extends Command
             }
             $column = $input->getArgument(self::INPUT_KEY_COLUMN);
             if (!strlen($column)) {
-                throw new \Exception('Provide an column');
+                throw new \Exception('Provide a column');
             }
             $jsonField = null;
             if (strpos($column, '.') !== false) {

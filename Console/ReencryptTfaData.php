@@ -16,8 +16,13 @@ use Symfony\Component\Console\Output\OutputInterface;
 class ReencryptTfaData extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
-
     public const TFA_TABLE = 'tfa_user_config';
+
+    private $deploymentConfig;
+    private $resourceConnection;
+    private $encryptor;
+    private $cache;
+    private $recursiveDataProcessor;
 
     /**
      * @param DeploymentConfig $deploymentConfig
@@ -27,12 +32,17 @@ class ReencryptTfaData extends Command
      * @param RecursiveDataProcessor $recursiveDataProcessor
      */
     public function __construct(
-        private readonly DeploymentConfig $deploymentConfig,
-        private readonly ResourceConnection $resourceConnection,
-        private readonly EncryptorInterface $encryptor,
-        private readonly CacheInterface $cache,
-        private readonly RecursiveDataProcessor $recursiveDataProcessor,
+        DeploymentConfig $deploymentConfig,
+        ResourceConnection $resourceConnection,
+        EncryptorInterface $encryptor,
+        CacheInterface $cache,
+        RecursiveDataProcessor $recursiveDataProcessor
     ) {
+        $this->deploymentConfig = $deploymentConfig;
+        $this->resourceConnection = $resourceConnection;
+        $this->encryptor = $encryptor;
+        $this->cache = $cache;
+        $this->recursiveDataProcessor = $recursiveDataProcessor;
         parent::__construct();
     }
 
