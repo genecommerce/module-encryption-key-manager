@@ -12,9 +12,19 @@ use Magento\Framework\Exception\LocalizedException;
 class ReEncryptCloudEnvKeysCommand
 {
     /**
+     * @var EncryptorInterface
+     */
+    private $encryptor;
+
+    /**
+     * @var EncodingHelper
+     */
+    private $helper;
+
+    /**
      * @var PlaceholderInterface
      */
-    private PlaceholderInterface $placeholder;
+    private $placeholder;
 
     /**
      * Constructor
@@ -25,10 +35,12 @@ class ReEncryptCloudEnvKeysCommand
      * @throws LocalizedException
      */
     public function __construct(
-        private readonly EncryptorInterface $encryptor,
-        private readonly EncodingHelper $helper,
-        PlaceholderFactory $placeholderFactory,
+        EncryptorInterface $encryptor,
+        EncodingHelper $helper,
+        PlaceholderFactory $placeholderFactory
     ) {
+        $this->encryptor = $encryptor;
+        $this->helper = $helper;
         $this->placeholder = $placeholderFactory->create(PlaceholderFactory::TYPE_ENVIRONMENT);
     }
 

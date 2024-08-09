@@ -7,20 +7,27 @@ namespace Gene\EncryptionKeyManager\Model;
 use Magento\Framework\App\DeploymentConfig;
 
 /**
- * Common states / validators for commands
+ * Common states / validators for commands.
  */
 class EncodingHelper
 {
     /**
+     * @var DeploymentConfig
+     */
+    private $deploymentConfig;
+
+    /**
+     * EncodingHelper constructor.
+     *
      * @param DeploymentConfig $deploymentConfig
      */
-    public function __construct(
-        private readonly DeploymentConfig $deploymentConfig
-    ) {
+    public function __construct(DeploymentConfig $deploymentConfig)
+    {
+        $this->deploymentConfig = $deploymentConfig;
     }
 
     /**
-     * Return the latest key number
+     * Return the latest key number.
      *
      * @return int
      */
@@ -28,32 +35,32 @@ class EncodingHelper
     {
         try {
             $keys = preg_split('/\s+/s', trim((string)$this->deploymentConfig->get('crypt/key')));
-        } catch (\Exception) {
+        } catch (\Exception $e) {
             return 0;
         }
-        return count($keys) -1;
+
+        return is_array($keys) ? count($keys) - 1 : 0;
     }
 
     /**
-     * Validate whether the value looks like digit:digit:string
+     * Validate whether the value looks like digit:digit:string.
      *
      * @param string $value
      * @return bool
      */
     public function isEncryptedValue(string $value): bool
     {
-        preg_match('/^\d:\d:\S+/', $value, $matches);
-        return !!count($matches);
+        return (bool)preg_match('/^\d:\d:\S+/', $value);
     }
 
     /**
-     * Returns whether the value is already encrypted
+     * Returns whether the value is already encrypted.
      *
      * @param string $encryptedValue
      * @return bool
      */
     public function isAlreadyUpdated(string $encryptedValue): bool
     {
-        return str_starts_with($encryptedValue, $this->getLatestKeyNumber() . ":");
+        return strpos($encryptedValue, $this->getLatestKeyNumber() . ":") === 0;
     }
 }

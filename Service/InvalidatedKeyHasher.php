@@ -17,6 +17,11 @@ use Magento\Framework\App\Config\ScopeConfigInterface;
 class InvalidatedKeyHasher extends MageEncryptor
 {
     /**
+     * @var ScopeConfigInterface
+     */
+    private $scopeConfig;
+
+    /**
      * @param Random $random
      * @param DeploymentConfig $deploymentConfig
      * @param ScopeConfigInterface $scopeConfig
@@ -25,10 +30,11 @@ class InvalidatedKeyHasher extends MageEncryptor
     public function __construct(
         Random $random,
         DeploymentConfig $deploymentConfig,
-        private readonly ScopeConfigInterface $scopeConfig,
+        ScopeConfigInterface $scopeConfig,
         KeyValidator $keyValidator = null
     ) {
         parent::__construct($random, $deploymentConfig, $keyValidator);
+        $this->scopeConfig = $scopeConfig;
 
         $keyIndex = $this->scopeConfig->getValue('gene/encryption_key_manager/invalidated_key_index');
         if ($keyIndex === null) {

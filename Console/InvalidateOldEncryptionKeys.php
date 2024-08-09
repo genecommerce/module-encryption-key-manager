@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Gene\EncryptionKeyManager\Console;
 
 use Magento\Framework\App\DeploymentConfig\Writer;
@@ -18,17 +19,26 @@ class InvalidateOldEncryptionKeys extends Command
 {
     public const INPUT_KEY_FORCE = 'force';
 
+    private $writer;
+    private $cache;
+    private $random;
+    private $deploymentConfig;
+
     /**
      * @param Writer $writer
      * @param CacheInterface $cache
      * @param DeploymentConfig $deploymentConfig
      */
     public function __construct(
-        private readonly Writer $writer,
-        private readonly CacheInterface $cache,
-        private readonly Random $random,
-        private readonly DeploymentConfig $deploymentConfig
+        Writer $writer,
+        CacheInterface $cache,
+        Random $random,
+        DeploymentConfig $deploymentConfig
     ) {
+        $this->writer = $writer;
+        $this->cache = $cache;
+        $this->random = $random;
+        $this->deploymentConfig = $deploymentConfig;
         parent::__construct();
     }
 
@@ -94,7 +104,7 @@ class InvalidateOldEncryptionKeys extends Command
                 if ($id === count($keys) - 1) {
                     break; // last key needs to remain usable
                 }
-                if (str_starts_with($key, 'invalid')) {
+                if (strpos($key, 'invalid') === 0) {
                     continue; // already been invalidated
                 }
                 $changes = true;

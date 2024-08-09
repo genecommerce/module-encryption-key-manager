@@ -16,6 +16,9 @@ class GetReEncryptedCloudEnvironmentsKeys extends Command
 {
     private const INPUT_KEY_SHOW_DECRYPTED = 'show-decrypted';
 
+    private $reencryptCloudEnvKeysCommand;
+    private $logger;
+
     /**
      * Constructor
      *
@@ -23,9 +26,11 @@ class GetReEncryptedCloudEnvironmentsKeys extends Command
      * @param LoggerInterface $logger
      */
     public function __construct(
-        private readonly ReEncryptCloudEnvKeysCommand $reencryptCloudEnvKeysCommand,
-        private readonly LoggerInterface $logger
+        ReEncryptCloudEnvKeysCommand $reencryptCloudEnvKeysCommand,
+        LoggerInterface $logger
     ) {
+        $this->reencryptCloudEnvKeysCommand = $reencryptCloudEnvKeysCommand;
+        $this->logger = $logger;
         parent::__construct();
     }
 

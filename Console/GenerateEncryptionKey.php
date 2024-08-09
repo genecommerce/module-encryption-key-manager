@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+
 namespace Gene\EncryptionKeyManager\Console;
 
 use Gene\EncryptionKeyManager\Service\ChangeEncryptionKey as ChangeEncryptionKeyService;
@@ -23,6 +24,15 @@ class GenerateEncryptionKey extends Command
     public const INPUT_KEY_KEY = 'key';
     public const INPUT_KEY_KEY_SHORTCUT = 'k';
 
+    private $changeEncryptionKey;
+    private $cache;
+    private $scopeConfig;
+    private $configWriter;
+    private $emulation;
+    private $state;
+    private $encryptor;
+    private $reencryptEnvSystemConfigurationValues;
+
     /**
      * @param ChangeEncryptionKeyService $changeEncryptionKey
      * @param CacheInterface $cache
@@ -33,15 +43,24 @@ class GenerateEncryptionKey extends Command
      * @param Encryptor $encryptor
      */
     public function __construct(
-        private readonly ChangeEncryptionKeyService $changeEncryptionKey,
-        private readonly CacheInterface $cache,
-        private readonly ScopeConfigInterface $scopeConfig,
-        private readonly WriterInterface $configWriter,
-        private readonly Emulation $emulation,
-        private readonly State $state,
-        private readonly Encryptor $encryptor,
-        private readonly ReencryptEnvSystemConfigurationValues $reencryptEnvSystemConfigurationValues
+        ChangeEncryptionKeyService $changeEncryptionKey,
+        CacheInterface $cache,
+        ScopeConfigInterface $scopeConfig,
+        WriterInterface $configWriter,
+        Emulation $emulation,
+        State $state,
+        Encryptor $encryptor,
+        ReencryptEnvSystemConfigurationValues $reencryptEnvSystemConfigurationValues
     ) {
+        $this->changeEncryptionKey = $changeEncryptionKey;
+        $this->cache = $cache;
+        $this->scopeConfig = $scopeConfig;
+        $this->configWriter = $configWriter;
+        $this->emulation = $emulation;
+        $this->state = $state;
+        $this->encryptor = $encryptor;
+        $this->reencryptEnvSystemConfigurationValues = $reencryptEnvSystemConfigurationValues;
+
         parent::__construct();
     }
 
