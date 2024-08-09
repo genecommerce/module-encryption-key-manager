@@ -74,6 +74,12 @@ class ReencryptUnhandledCoreConfigData extends Command
              */
             $ccdTable = $this->resourceConnection->getTableName('core_config_data');
             $connection = $this->resourceConnection->getConnection();
+
+            if (!$connection->isTableExists($ccdTable)) {
+                $output->writeln("<info>The table {$ccdTable} doesn't exist</info>");
+                return Cli::RETURN_SUCCESS;
+            }
+
             $select = $connection->select()
                 ->from($ccdTable, ['*'])
                 ->where('(value LIKE "_:_:____%" OR value LIKE "__:_:____%")')
