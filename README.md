@@ -75,12 +75,12 @@ zgrep -P "VALUES\s*\(.*\d:\d:...*'" database.sql | awk '{print $3}' | sort | uni
 4. **Fix 2FA data** `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
    1. Re-run to verify `php bin/magento gene:encryption-key-manager:reencrypt-tfa-data`
 5. Fix up all additional identified columns like so, be careful to verify each table and column as this may not be an exhaustive list (also be aware of `entity_id`, `row_id` and `id`)
-    1. `bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token`
-    2. `bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
-    3. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_token entity_id secret`
-    4. `bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
-    5. `bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
-    6. `bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
+    1. `php bin/magento gene:encryption-key-manager:reencrypt-column admin_user user_id rp_token`
+    2. `php bin/magento gene:encryption-key-manager:reencrypt-column customer_entity entity_id rp_token`
+    3. `php bin/magento gene:encryption-key-manager:reencrypt-column oauth_token entity_id secret`
+    4. `php bin/magento gene:encryption-key-manager:reencrypt-column oauth_consumer entity_id secret`
+    5. `php bin/magento gene:encryption-key-manager:reencrypt-column admin_adobe_ims_webapi id access_token`
+    6. `php bin/magento gene:encryption-key-manager:reencrypt-column adobe_user_profile id access_token`
 6. Flush the cache `php bin/magento cache:flush`
 6. At this point you should have all your data migrated to your new encryption key, to help you verify this you can do the following
    1. `php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1`
@@ -123,6 +123,8 @@ It is recommended to enable this logging after you have handled the re-encryptio
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_enable_decrypt_logging 1
 php bin/magento config:set --lock-env dev/debug/gene_encryption_manager_only_log_old_decrypts 1
 ```
+
+The log file is located in <mage_dir>/var/log/gene_encryption_key.log
 
 ## bin/magento gene:encryption-key-manager:generate
 
@@ -268,3 +270,22 @@ Dectypted value: dectypted_value_2
 Old Encrypted Value: 0:3:AAA2
 New Encrypted Value: 1:3:BBB2
 ```
+
+# Caveats
+
+## report.WARNING: Unable to unserialize value
+
+This is not common, it has been reported by people using this module and people using the admin controller to rotate their encryption keys. Flushing redis cache resolves the issue.
+
+Please ensure you [flush your redis cache](https://redis.io/docs/latest/commands/flushall/)
+
+Now you are right to continue with the re-encryption work as stated above.
+
+## You manually replaced your encryption key
+You will need to:
+1. Recover your old encryption key
+1. Prepend your old key to the new key, separated by `\n` and repeat the steps above
+
+## Other issues
+
+Search https://github.com/genecommerce/module-encryption-key-manager/issues for other issues.
