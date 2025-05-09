@@ -64,11 +64,15 @@ vendor/bin/n98-magerun2 db:query 'DROP TABLE IF EXISTS fake_json_table; CREATE T
 vendor/bin/n98-magerun2 db:query "insert into fake_json_table(text_column) values ('$FAKE_JSON_PAYLOAD');"
 vendor/bin/n98-magerun2 db:query "select * from fake_json_table";
 
+echo "Stubbing in a large volume of data to sales_order_payment"
+php vendor/gene/module-encryption-key-manager/dev/stub_sales_order_payment.php
+vendor/bin/n98-magerun2 db:query "select cc_number_enc from sales_order_payment where parent_id=1 limit 5";
+
 echo "";echo "";
 
 echo "Verifying commands need to use --force"
 
-php bin/magento gene:encryption-key-manager:generate > test.txt || true;
+php bin/magento gene:encryption-key-manager:generate -vvv > test.txt || true;
 if grep -q 'Run with --force' test.txt; then
     echo "PASS: generate needs to run with force"
 else
@@ -115,7 +119,7 @@ echo "";echo "";
 
 echo "Generating a new encryption key"
 grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php
-php bin/magento gene:encryption-key-manager:generate --force  > test.txt
+time php bin/magento gene:encryption-key-manager:generate --force  > test.txt
 if grep -q "$ENCRYPTED_ENV_VALUE" app/etc/env.php; then
     echo "FAIL: The old encrypted value in env.php was not updated" && false
 fi
@@ -125,6 +129,8 @@ grep -q '_reEncryptSystemConfigurationValues - end'   test.txt
 grep -q '_reEncryptCreditCardNumbers - start' test.txt
 grep -q '_reEncryptCreditCardNumbers - end'   test.txt
 echo "PASS"
+cat test.txt
+vendor/bin/n98-magerun2 db:query "select cc_number_enc from sales_order_payment where parent_id=1 limit 5";
 echo "";echo "";
 
 echo "Generating a new encryption key - skipping _reEncryptCreditCardNumbers"
