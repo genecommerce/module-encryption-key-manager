@@ -23,7 +23,7 @@ This module **does not conflict** with the [new hotfix](https://experienceleague
 composer require gene/module-encryption-key-manager
 bin/magento setup:upgrade
 ```
-
+ 
 # How to Rotate your key and protect your store 
 
 This is a rough list of steps that should be followed to prevent attacks with CosmicSting. Please read all of the steps carefully to understand the features this module provides, as well as the points of risk.
